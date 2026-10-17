@@ -48,7 +48,8 @@ function MockGate({ children }: { children: ReactNode }) {
       {MOCK_API && (
         <div
           aria-hidden
-          className="pointer-events-none fixed bottom-2 left-2 z-[80] rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-black"
+          // Sits above the mobile tab bar so it never covers the Home icon.
+          className="pointer-events-none fixed bottom-[calc(64px+env(safe-area-inset-bottom))] left-2 z-[80] rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-black md:bottom-2"
         >
           MOCK
         </div>

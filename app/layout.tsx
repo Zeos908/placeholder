@@ -30,10 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={cn(inter.variable, grandHotel.variable)} suppressHydrationWarning>
       <body>
-        <Providers>
-          {/* Phase F1 replaces this column with the mobile/desktop app shell. */}
-          <div className="mx-auto min-h-dvh w-full max-w-[470px]">{children}</div>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -10,11 +10,14 @@ interface UiState {
   topBarVisible: boolean;
   activeSheet: string | null;
   scrollTops: Record<TabKey, number>;
+  /** Tab whose queries are refreshing after a re-tap (spinner under the top bar). */
+  refreshing: TabKey | null;
   setVideoMuted: (muted: boolean) => void;
   setTopBarVisible: (visible: boolean) => void;
   openSheet: (sheet: string) => void;
   closeSheet: () => void;
   setScrollTop: (tab: TabKey, top: number) => void;
+  setRefreshing: (tab: TabKey | null) => void;
 }
 
 export const useUi = create<UiState>()((set) => ({
@@ -22,6 +25,8 @@ export const useUi = create<UiState>()((set) => ({
   topBarVisible: true,
   activeSheet: null,
   scrollTops: { feed: 0, friends: 0, saved: 0 },
+  refreshing: null,
+  setRefreshing: (refreshing) => set({ refreshing }),
   setVideoMuted: (videoMuted) => set({ videoMuted }),
   setTopBarVisible: (topBarVisible) => set({ topBarVisible }),
   openSheet: (activeSheet) => set({ activeSheet }),

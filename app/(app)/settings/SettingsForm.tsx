@@ -165,7 +165,7 @@ export function SettingsForm({
       <AccountSection email={email} username={saved.username} />
 
       {(dirty || result) && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:bottom-0 md:left-[72px] wide:left-[244px]">
           <div className="mx-auto flex max-w-[438px] items-center gap-3">
             <p className="flex-1 text-sm" role="status" aria-live="polite">
               {result && !result.ok ? (

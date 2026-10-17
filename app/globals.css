@@ -54,6 +54,13 @@
   --skeleton-to: #262626;
 }
 
+/* Shell breakpoints (spec §5–6): md = 768 px tab bar ↔ sidebar; panel = 1160 px right panel;
+   wide = 1264 px sidebar with labels. */
+@theme {
+  --breakpoint-panel: 72.5rem;
+  --breakpoint-wide: 79rem;
+}
+
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sans);

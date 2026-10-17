@@ -100,7 +100,7 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
   const usernameBlocked = step === 0 && !["available", "yours"].includes(usernameStatus);
 
   return (
-    <main className="flex min-h-dvh flex-col px-4 pt-4 pb-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-[470px] flex-col px-4 pt-4 pb-6">
       <header className="flex items-center justify-between py-2">
         <Wordmark size={30} />
         <button
