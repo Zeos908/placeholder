@@ -31,11 +31,12 @@ export function SavedTab() {
         </Link>
       </div>
 
-      {/* Sticky under the mobile top bar while it's showing; at the very top otherwise. */}
+      {/* Sticky under the mobile top bar while it's showing; at the very top otherwise. Sticky offsets
+          count from inside the tab container's 56 px top padding, hence 0 / -56 px. */}
       <div
         className={cn(
           "sticky z-30 border-b border-border bg-background transition-[top] duration-200 ease-ig md:top-0",
-          topBarVisible ? "top-14" : "top-0",
+          topBarVisible ? "top-0" : "-top-14",
         )}
       >
         <FilterChips value={filter} onChange={setFilter} />

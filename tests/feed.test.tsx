@@ -9,7 +9,7 @@ import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Feed } from "@/components/feed/Feed";
 import { NotificationsList } from "@/components/notifications/NotificationsList";
-import { TabActiveContext } from "@/components/shell/shell-context";
+import { ShellUserContext, TabActiveContext } from "@/components/shell/shell-context";
 import { FriendsTab } from "@/components/tabs/FriendsTab";
 import { Toaster } from "@/components/ui/sonner";
 import { api } from "@/lib/api";
@@ -31,7 +31,9 @@ function renderWith(ui: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <TabActiveContext.Provider value={{ tab: "feed", active: true }}>{ui}</TabActiveContext.Provider>
+      <ShellUserContext.Provider value={{ username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
+        <TabActiveContext.Provider value={{ tab: "feed", active: true }}>{ui}</TabActiveContext.Provider>
+      </ShellUserContext.Provider>
       <Toaster />
     </QueryClientProvider>,
   );
@@ -120,7 +122,7 @@ describe("red dots", () => {
   it("the Friends dot clears once new shares have been on screen", async () => {
     expect((await api.me()).badges.unreadInbox).toBeGreaterThan(0);
     renderWith(<FriendsTab />);
-    await screen.findByRole("region", { name: "Shares" });
+    await screen.findByRole("list", { name: "Shares", hidden: true });
     await waitFor(async () => expect((await api.me()).badges.unreadInbox).toBe(0), { timeout: 3000 });
   });
 
@@ -128,12 +130,14 @@ describe("red dots", () => {
     const client = new QueryClient();
     render(
       <QueryClientProvider client={client}>
+        <ShellUserContext.Provider value={{ username: "alex", display_name: null, avatar_url: null }}>
         <TabActiveContext.Provider value={{ tab: "friends", active: false }}>
           <FriendsTab />
         </TabActiveContext.Provider>
+        </ShellUserContext.Provider>
       </QueryClientProvider>,
     );
-    await screen.findByRole("region", { name: "Shares" });
+    await screen.findByRole("list", { name: "Shares", hidden: true });
     await new Promise((r) => setTimeout(r, 1500));
     expect((await api.me()).badges.unreadInbox).toBeGreaterThan(0);
   });

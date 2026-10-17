@@ -8,7 +8,7 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { useKeyboardViewport } from "@/lib/use-visual-viewport";
 import { ErrorState } from "@/components/common/EmptyState";
 import { ReportDialog } from "@/components/common/ReportDialog";
-import { shareListing } from "@/components/feed/PostCard";
+import { ShareSheet } from "@/components/common/ShareSheet";
 import { PostSkeleton } from "@/components/feed/PostSkeleton";
 import { ItemDetails } from "@/components/saved/ItemDetails";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -34,6 +34,7 @@ export function SavedItemView() {
   const { data, isPending, isError, refetch } = useListing(listingId);
   const [tab, setTab] = useState<TabValue>("details");
   const [reportOpen, setReportOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const hide = useHideFromFriends();
   const unsave = useUnsave();
   const keyboard = useKeyboardViewport();
@@ -71,7 +72,7 @@ export function SavedItemView() {
         <MoreHorizontal className="size-6" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuItem onSelect={() => void shareListing(data.listing)}>
+        <DropdownMenuItem onSelect={() => setShareOpen(true)}>
           <Share /> Share
         </DropdownMenuItem>
         {saved && (
@@ -159,6 +160,9 @@ export function SavedItemView() {
         </TabsPrimitive.Root>
       )}
 
+      {data && (
+        <ShareSheet listing={data.listing} open={shareOpen} onOpenChange={setShareOpen} />
+      )}
       {data && (
         <ReportDialog
           open={reportOpen}

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/Avatar";
 import { ReportDialog } from "@/components/common/ReportDialog";
+import { ShareSheet } from "@/components/common/ShareSheet";
 import { OrgAvatar, TypeBadge } from "@/components/common/TypeBadge";
 import { DoubleTapSave } from "@/components/feed/DoubleTapSave";
 import { PostMedia } from "@/components/feed/PostMedia";
@@ -28,19 +29,6 @@ import type { FeedPost } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const SEEN_AFTER_MS = 2000;
-
-export async function shareListing(post: Pick<FeedPost, "id" | "title">) {
-  const url = `${location.origin}/l/${post.id}`;
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: post.title, url });
-    } catch {
-      // dismissed
-    }
-    return;
-  }
-  await copyLink(url);
-}
 
 async function copyLink(url: string) {
   try {
@@ -69,6 +57,7 @@ export function PostCard({ post, index, onExit }: { post: FeedPost; index: numbe
   const [expanded, setExpanded] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const toggleMuted = () => {
     const ui = useUi.getState();
     ui.setVideoMuted(!ui.videoMuted);
@@ -152,7 +141,7 @@ export function PostCard({ post, index, onExit }: { post: FeedPost; index: numbe
               <DropdownMenuItem onSelect={() => swipeRef.current?.fling("left")}>
                 <X /> Pass
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => void shareListing(post)}>
+              <DropdownMenuItem onSelect={() => setShareOpen(true)}>
                 <Share /> Share
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => void copyLink(`${location.origin}/l/${post.id}`)}>
@@ -191,7 +180,7 @@ export function PostCard({ post, index, onExit }: { post: FeedPost; index: numbe
           </button>
           <button
             type="button"
-            onClick={() => void shareListing(post)}
+            onClick={() => setShareOpen(true)}
             aria-label="Share"
             className="flex size-10 items-center justify-center rounded-full transition-transform active:scale-90"
           >
@@ -272,6 +261,7 @@ export function PostCard({ post, index, onExit }: { post: FeedPost; index: numbe
         )}
       </article>
 
+      <ShareSheet listing={post} open={shareOpen} onOpenChange={setShareOpen} />
       <ReportDialog
         open={reportOpen}
         onOpenChange={setReportOpen}
