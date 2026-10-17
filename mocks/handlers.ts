@@ -176,6 +176,12 @@ function cannedAnswer(listingId: string, question: string) {
 // ---------- handlers ----------
 
 export const handlers = [
+  // "Simulate errors" (MOCK menu): fail everything so error states and rollbacks can be seen.
+  // Returning nothing lets the request fall through to the real handlers below.
+  http.all("*/api/*", () => {
+    if (db().failRequests) return fail(503, "Simulated outage (mock mode).", "busy");
+  }),
+
   // ---- me / profiles
   http.get("*/api/me", async () => {
     await latency();

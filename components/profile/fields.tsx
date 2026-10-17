@@ -3,8 +3,11 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { checkUsername, type UsernameStatus } from "@/app/actions/profile";
 import { Avatar } from "@/components/Avatar";
+import { Check } from "lucide-react";
 import { CameraIcon, CheckIcon, XIcon } from "@/components/icons";
-import { Chip, Field, Input, Spinner, Textarea } from "@/components/legacy-ui";
+import { Field, Spinner, TextArea as Textarea, TextInput as Input } from "@/components/common/Field";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 import { uploadAvatar } from "@/lib/avatar-upload";
 import { GRADE_OPTIONS } from "@/lib/grades";
 import { BIO_MAX } from "@/lib/profile-schema";
@@ -216,16 +219,30 @@ export function GradeSelect({
 
 // ---------- interests ----------
 
+/** Interest chips (spec §17): --surface pills; selected = gradient border, 600 weight, check. */
 export function InterestPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const toggle = (t: Tag) =>
     onChange(value.includes(t) ? value.filter((v) => v !== t) : [...value, t]);
   return (
     <div className="flex flex-wrap gap-2" role="group" aria-label="Interests">
-      {TAGS.map((t) => (
-        <Chip key={t} selected={value.includes(t)} onClick={() => toggle(t)}>
-          {tagLabel(t)}
-        </Chip>
-      ))}
+      {TAGS.map((t) => {
+        const on = value.includes(t);
+        return (
+          <button
+            key={t}
+            type="button"
+            aria-pressed={on}
+            onClick={() => toggle(t)}
+            className={cn(
+              "inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm transition",
+              on ? "border-accent-gradient font-semibold" : "border-[1.5px] border-transparent bg-surface",
+            )}
+          >
+            {on && <Check aria-hidden className="size-3.5" strokeWidth={3} />}
+            {tagLabel(t)}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -324,20 +341,21 @@ export function LocationFields({
           className="max-w-40"
         />
       </Field>
-      <div className="space-y-1.5">
-        <label htmlFor={radiusId} className="flex justify-between text-sm font-medium">
-          <span>How far you&apos;ll travel</span>
-          <span className="text-muted-foreground">{radius} mi</span>
-        </label>
-        <input
-          id={radiusId}
-          type="range"
+      <div className="space-y-3">
+        <div className="flex justify-between text-sm font-medium">
+          <span id={radiusId}>How far you&apos;ll travel</span>
+          <span className="text-muted-foreground" aria-hidden>
+            {radius} mi
+          </span>
+        </div>
+        <Slider
           min={5}
           max={100}
           step={5}
-          value={radius}
-          onChange={(e) => onRadius(Number(e.target.value))}
-          className="w-full accent-[#DD2A7B]"
+          value={[radius]}
+          onValueChange={([v]) => onRadius(v)}
+          aria-labelledby={radiusId}
+          aria-valuetext={`${radius} miles`}
         />
       </div>
     </div>

@@ -72,7 +72,7 @@ function CaughtUp({ compact }: { compact?: boolean }) {
       body="Check back later or add interests."
       action={
         <Button asChild variant="surface">
-          <Link href="/settings">Edit interests</Link>
+          <Link href="/settings/profile">Edit interests</Link>
         </Button>
       }
     />

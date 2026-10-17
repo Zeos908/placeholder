@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
-import { zipToLatLng } from "@/lib/geo";
+import { applyProfileUpdate } from "@/lib/server/profile-update";
 import { MOCK_API } from "@/lib/mock";
 import { getMyProfile, getSessionUser } from "@/lib/profile";
 import { profileUpdateSchema, USERNAME_RE, type ProfileUpdate } from "@/lib/profile-schema";
@@ -15,61 +14,14 @@ export type ActionResult = { ok: true } | { ok: false; error: string; field?: st
 const NOT_SIGNED_IN: ActionResult = { ok: false, error: "Your session expired. Log in again." };
 
 /** Partial profile update shared by onboarding and Settings. */
-// In mock API mode these server actions don't touch Supabase. Phase F7 moves the screens that
-// use them onto the /api client (mocked by MSW), after which these short-circuits go away.
+// In mock API mode these server actions don't touch Supabase (onboarding and Delete account
+// still use them; everything else talks to /api, which MSW mocks).
 export async function updateProfile(input: ProfileUpdate): Promise<ActionResult> {
   if (MOCK_API) return { ok: true };
   const user = await getSessionUser();
   if (!user) return NOT_SIGNED_IN;
-
-  const parsed = profileUpdateSchema.safeParse(input);
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
-    return { ok: false, error: issue.message, field: String(issue.path[0] ?? "") };
-  }
-  const data = parsed.data;
-  const row: Record<string, unknown> = { ...data };
-
-  // Avatars must be this user's own upload in the avatars bucket, or the photo already on the
-  // profile (e.g. the one Google provided at sign-up), so it can't point at arbitrary URLs.
-  if (data.avatar_url) {
-    const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${user.id}/`;
-    const current = (await getMyProfile())?.avatar_url;
-    if (!data.avatar_url.startsWith(prefix) && data.avatar_url !== current) {
-      return { ok: false, error: "That photo couldn't be used. Upload it again.", field: "avatar_url" };
-    }
-  }
-
-  if (data.zip !== undefined) {
-    const coords = data.zip ? await zipToLatLng(data.zip) : null;
-    row.lat = coords?.lat ?? null;
-    row.lng = coords?.lng ?? null;
-  }
-
-  if (data.skills) {
-    const seen = new Set<string>();
-    row.skills = data.skills.filter((s) => {
-      const key = s.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  const supabase = await createClient();
-  if (Object.keys(row).length) {
-    const { error } = await supabase.from("profiles").update(row).eq("id", user.id);
-    if (error) {
-      if (error.code === "23505") return { ok: false, error: "That username is taken.", field: "username" };
-      return { ok: false, error: "Couldn't save your changes. Try again." };
-    }
-  }
-
-  // §7: each chosen interest starts with weight 1.0 (keeps higher learned weights).
-  if (data.interests?.length) {
-    await supabase.rpc("seed_interest_weights", { p_tags: data.interests });
-  }
-
+  const result = await applyProfileUpdate(user.id, (await getMyProfile())?.avatar_url ?? null, input);
+  if (!result.ok) return { ok: false, error: result.error, field: result.field };
   revalidatePath("/", "layout");
   return { ok: true };
 }
@@ -100,22 +52,6 @@ export async function completeOnboarding(timezone?: string) {
   await supabase.from("profiles").update(row).eq("id", user.id).is("onboarded_at", null);
   revalidatePath("/", "layout");
   redirect("/feed");
-}
-
-export async function unblockUser(userId: string): Promise<ActionResult> {
-  if (MOCK_API) return { ok: true };
-  const user = await getSessionUser();
-  if (!user) return NOT_SIGNED_IN;
-  if (!z.uuid().safeParse(userId).success) return { ok: false, error: "Unknown user." };
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("blocks")
-    .delete()
-    .eq("blocker_id", user.id)
-    .eq("blocked_id", userId);
-  if (error) return { ok: false, error: "Couldn't unblock. Try again." };
-  revalidatePath("/settings");
-  return { ok: true };
 }
 
 export interface DeleteState {

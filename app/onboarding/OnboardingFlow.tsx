@@ -1,7 +1,9 @@
 "use client";
 
+import { ChevronLeft } from "lucide-react";
 import { useId, useState, useTransition } from "react";
-import { completeOnboarding, updateProfile, type ActionResult } from "@/app/actions/profile";
+import { completeOnboarding, updateProfile, type ActionResult, type UsernameStatus } from "@/app/actions/profile";
+import { Field, TextInput } from "@/components/common/Field";
 import {
   AvatarPicker,
   BioField,
@@ -11,9 +13,8 @@ import {
   SkillsInput,
   UsernameField,
 } from "@/components/profile/fields";
-import { Wordmark } from "@/components/common/Wordmark";
-import { Button, Field, Input, Notice } from "@/components/legacy-ui";
-import type { UsernameStatus } from "@/app/actions/profile";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface Draft {
   username: string;
@@ -45,6 +46,10 @@ function timeZone() {
   }
 }
 
+/**
+ * Onboarding (spec §17): 4 steps, progress dots, "Skip" top-right on every step, a big gradient
+ * Next pinned to the bottom ("Start exploring" on the last). Only the username is required.
+ */
 export function OnboardingFlow({ userId, initial }: { userId: string; initial: Draft }) {
   const [step, setStep] = useState(0);
   const [d, setD] = useState<Draft>(initial);
@@ -56,10 +61,9 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setD((prev) => ({ ...prev, [key]: value }));
   const last = step === STEPS.length - 1;
-  const fieldError = (name: string) =>
-    result && !result.ok && result.field === name ? result.error : undefined;
+  const fieldError = (name: string) => (result && !result.ok && result.field === name ? result.error : undefined);
 
-  // Fields saved by each step's "Next" button.
+  // Fields saved by each step's Next.
   function stepPayload() {
     switch (step) {
       case 0:
@@ -77,10 +81,6 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
     }
   }
 
-  function finish() {
-    startTransition(() => completeOnboarding(timeZone()));
-  }
-
   function next() {
     startTransition(async () => {
       const res = await updateProfile(stepPayload());
@@ -91,51 +91,60 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
     });
   }
 
+  // Skip this step without saving it (on the last step, finish).
   function skip() {
     setResult(null);
-    if (last) finish();
+    if (last) startTransition(() => completeOnboarding(timeZone()));
     else setStep((s) => s + 1);
   }
 
   const usernameBlocked = step === 0 && !["available", "yours"].includes(usernameStatus);
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[470px] flex-col px-4 pt-4 pb-6">
-      <header className="flex items-center justify-between py-2">
-        <Wordmark size={30} />
+    <main className="mx-auto flex min-h-dvh w-full max-w-[470px] flex-col px-4 pt-3">
+      <header className="grid grid-cols-[44px_1fr_44px] items-center py-2">
+        {step > 0 ? (
+          <button
+            type="button"
+            aria-label="Back"
+            onClick={() => setStep((s) => s - 1)}
+            disabled={pending}
+            className="flex size-10 items-center justify-center rounded-full hover:bg-surface"
+          >
+            <ChevronLeft className="size-6" />
+          </button>
+        ) : (
+          <span />
+        )}
+        <div
+          className="flex justify-center gap-2"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={STEPS.length}
+          aria-valuenow={step + 1}
+          aria-label={`Step ${step + 1} of ${STEPS.length}`}
+        >
+          {STEPS.map((_, i) => (
+            <span
+              key={i}
+              className={cn("size-2 rounded-full transition-colors", i <= step ? "bg-accent-gradient" : "bg-border")}
+            />
+          ))}
+        </div>
         <button
           type="button"
-          onClick={finish}
+          onClick={skip}
           disabled={pending}
-          className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
+          className="justify-self-end text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
         >
-          Skip setup
+          Skip
         </button>
       </header>
 
-      <div
-        className="mt-2 flex gap-1.5"
-        role="progressbar"
-        aria-valuemin={1}
-        aria-valuemax={STEPS.length}
-        aria-valuenow={step + 1}
-        aria-label={`Step ${step + 1} of ${STEPS.length}`}
-      >
-        {STEPS.map((_, i) => (
-          <span
-            key={i}
-            className={`h-1 flex-1 rounded-full ${i <= step ? "bg-accent-gradient" : "bg-border"}`}
-          />
-        ))}
-      </div>
-
-      <section className="mt-8 flex-1 space-y-6" aria-live="polite">
+      <section className="flex-1 space-y-6 pt-6 pb-28" aria-live="polite">
         <div className="space-y-1">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Step {step + 1} of {STEPS.length}
-          </p>
-          <h1 className="text-2xl font-bold">{STEPS[step].title}</h1>
-          <p className="text-sm text-muted-foreground">{STEPS[step].subtitle}</p>
+          <h1 className="text-[22px] leading-7 font-bold">{STEPS[step].title}</h1>
+          <p className="text-muted-foreground">{STEPS[step].subtitle}</p>
         </div>
 
         {step === 0 && (
@@ -153,7 +162,7 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
               error={fieldError("username")}
             />
             <Field label="Name" htmlFor={displayNameId} hint="Optional. Shown to friends.">
-              <Input
+              <TextInput
                 id={displayNameId}
                 value={d.display_name}
                 onChange={(e) => set("display_name", e.target.value)}
@@ -168,7 +177,7 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
           <div className="space-y-5">
             <GradeSelect value={d.grade_level} onChange={(v) => set("grade_level", v)} />
             <Field label="School" htmlFor={schoolId} hint="Optional.">
-              <Input
+              <TextInput
                 id={schoolId}
                 value={d.school}
                 onChange={(e) => set("school", e.target.value)}
@@ -179,12 +188,10 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
           </div>
         )}
 
-        {step === 2 && (
-          <InterestPicker value={d.interests} onChange={(v) => set("interests", v)} />
-        )}
+        {step === 2 && <InterestPicker value={d.interests} onChange={(v) => set("interests", v)} />}
 
         {step === 3 && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <LocationFields
               zip={d.zip}
               radius={d.radius_miles}
@@ -199,22 +206,18 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
 
         {/* Username and zip show their errors inline; everything else shows here. */}
         {result && !result.ok && !INLINE_ERROR_FIELDS.includes(result.field ?? "") && (
-          <Notice tone="error">{result.error}</Notice>
+          <p role="alert" className="text-sm text-danger">
+            {result.error}
+          </p>
         )}
       </section>
 
-      <footer className="mt-8 flex items-center gap-3">
-        {step > 0 && (
-          <Button type="button" variant="ghost" onClick={() => setStep((s) => s - 1)} disabled={pending}>
-            Back
+      <footer className="fixed inset-x-0 bottom-0 bg-background/95 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] backdrop-blur">
+        <div className="mx-auto max-w-[438px]">
+          <Button variant="gradient" className="h-12 w-full text-base" onClick={next} disabled={pending || usernameBlocked}>
+            {pending ? "Saving…" : last ? "Start exploring" : "Next"}
           </Button>
-        )}
-        <Button type="button" variant="secondary" className="ml-auto" onClick={skip} disabled={pending}>
-          Skip
-        </Button>
-        <Button type="button" onClick={next} pending={pending} disabled={usernameBlocked}>
-          {last ? "Finish" : "Next"}
-        </Button>
+        </div>
       </footer>
     </main>
   );

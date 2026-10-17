@@ -20,12 +20,12 @@ export default async function SignUpPage({
 
   return (
     <>
-      <section className="space-y-5 rounded-xl border border-border px-6 py-8 sm:px-8">
-        <div className="space-y-2 text-center">
+      <section className="space-y-4 rounded-sm border border-border px-8 pt-10 pb-6">
+        <div className="space-y-3 pb-2 text-center">
           <h1 className="flex justify-center">
             <Wordmark size={52} />
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-[15px] leading-5 font-semibold text-muted-foreground">
             Sign up to find opportunities and see what your friends are saving.
           </p>
         </div>
@@ -37,7 +37,7 @@ export default async function SignUpPage({
         )}
         <SignUpForm />
       </section>
-      <p className="rounded-xl border border-border px-6 py-5 text-center text-sm">
+      <p className="rounded-sm border border-border px-6 py-5 text-center text-sm">
         Have an account?{" "}
         <Link
           href={next === "/feed" ? "/login" : `/login?next=${encodeURIComponent(next)}`}

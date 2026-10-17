@@ -2,10 +2,14 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
+import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import { Wordmark } from "@/components/common/Wordmark";
 import { Toaster } from "@/components/ui/sonner";
 import { MOCK_API } from "@/lib/mock";
+
+// Loaded only in mock mode, so MSW never ships in a normal build.
+const MockMenu = dynamic(() => import("@/components/MockMenu").then((m) => m.MockMenu), { ssr: false });
 
 function makeQueryClient() {
   return new QueryClient({
@@ -45,15 +49,8 @@ function MockGate({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      {MOCK_API && (
-        <div
-          aria-hidden
-          // Sits above the mobile tab bar so it never covers the Home icon.
-          className="pointer-events-none fixed bottom-[calc(64px+env(safe-area-inset-bottom))] left-2 z-[80] rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-black md:bottom-2"
-        >
-          MOCK
-        </div>
-      )}
+      {/* MOCK badge + menu (sits above the mobile tab bar so it never covers Home). */}
+      {MOCK_API && <MockMenu />}
     </>
   );
 }

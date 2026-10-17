@@ -1,3 +1,4 @@
+import { MOCK_API } from "@/lib/mock";
 import { createClient } from "@/lib/supabase/client";
 
 const SIZE = 320;
@@ -35,6 +36,9 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
 
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.85));
   if (!blob) throw new Error("Couldn't process that image.");
+
+  // Mock mode has no Storage: keep the resized photo in memory as a data URL.
+  if (MOCK_API) return canvas.toDataURL("image/webp", 0.85);
 
   const supabase = createClient();
   const bucket = supabase.storage.from("avatars");

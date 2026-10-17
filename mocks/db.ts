@@ -219,7 +219,31 @@ function createDb() {
     checklists,
     undo: new Map<string, { listingId: string; prev: MyRow | undefined }>(),
     inviteCode: "alex-7k2p",
+    /** "Simulate errors" in the MOCK menu: every /api call fails with 503. */
+    failRequests: false,
   };
+}
+
+export type MockPreset = "demo" | "empty";
+
+/**
+ * "Empty account": no listings, saves, friends, shares, activity or notifications, so every
+ * empty state in the spec (§17) shows at once.
+ */
+function createEmptyDb() {
+  const d = createDb();
+  d.listings = [];
+  d.mine.clear();
+  d.friendIds.clear();
+  d.incoming.clear();
+  d.friendSaves = [];
+  d.activity = [];
+  d.inbox = [];
+  d.notifications = [];
+  d.chats = new Map();
+  d.reminders = [];
+  d.checklists = new Map();
+  return d;
 }
 
 export type Db = ReturnType<typeof createDb>;
@@ -228,6 +252,10 @@ let state: Db = createDb();
 export const db = () => state;
 export function resetDb() {
   state = createDb();
+}
+export function loadPreset(preset: MockPreset, failRequests = false) {
+  state = preset === "empty" ? createEmptyDb() : createDb();
+  state.failRequests = failRequests;
 }
 export { uid, hoursAgo };
 
