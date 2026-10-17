@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button, Field, Input, Notice } from "@/components/ui";
+import { Button, Field, Input, Notice } from "@/components/legacy-ui";
 import { signIn, type AuthState } from "../actions";
 
 export function LoginForm({ next }: { next: string }) {

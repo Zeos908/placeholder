@@ -20,9 +20,10 @@ import {
   SkillsInput,
   UsernameField,
 } from "@/components/profile/fields";
-import { Button, Field, Input, Notice, cx } from "@/components/ui";
+import { Button, Field, Input, Notice, cx } from "@/components/legacy-ui";
 import type { Profile } from "@/lib/profile";
-import { applyTheme, type Theme } from "@/lib/theme-client";
+import { useTheme } from "next-themes";
+import type { Theme } from "@/components/ThemeSync";
 
 export interface BlockedUser {
   id: string;
@@ -164,7 +165,7 @@ export function SettingsForm({
       <AccountSection email={email} username={saved.username} />
 
       {(dirty || result) && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-bg/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
           <div className="mx-auto flex max-w-[438px] items-center gap-3">
             <p className="flex-1 text-sm" role="status" aria-live="polite">
               {result && !result.ok ? (
@@ -210,10 +211,10 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-4 border-b border-line px-4 py-6">
+    <section className="space-y-4 border-b border-border px-4 py-6">
       <div>
         <h2 className="text-base font-semibold">{title}</h2>
-        {description && <p className="mt-0.5 text-sm text-neutral-500">{description}</p>}
+        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
       </div>
       {children}
     </section>
@@ -277,7 +278,7 @@ function PrivacySection({ initial }: { initial: boolean }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium">Show my saves to friends</p>
-          <p className="mt-0.5 text-sm text-neutral-500">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             When off, friends can&apos;t see anything you save. You can also hide single items from
             their detail page.
           </p>
@@ -298,6 +299,7 @@ const THEMES: { value: Theme; label: string }[] = [
 function AppearanceSection({ initial }: { initial: Theme }) {
   const [theme, setTheme] = useState<Theme>(initial);
   const [error, setError] = useState<string | null>(null);
+  const { setTheme: applyTheme } = useTheme();
 
   function change(t: Theme) {
     const previous = theme;
@@ -315,7 +317,7 @@ function AppearanceSection({ initial }: { initial: Theme }) {
 
   return (
     <Section title="Appearance">
-      <div className="grid grid-cols-3 rounded-lg border border-line p-1" role="radiogroup" aria-label="Theme">
+      <div className="grid grid-cols-3 rounded-lg border border-border p-1" role="radiogroup" aria-label="Theme">
         {THEMES.map((t) => (
           <button
             key={t.value}
@@ -325,7 +327,7 @@ function AppearanceSection({ initial }: { initial: Theme }) {
             onClick={() => change(t.value)}
             className={cx(
               "h-9 rounded-md text-sm font-medium transition",
-              theme === t.value ? "bg-fg text-bg" : "text-neutral-500 hover:text-fg",
+              theme === t.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
             )}
           >
             {t.label}
@@ -354,7 +356,7 @@ function BlockedSection({ initial }: { initial: BlockedUser[] }) {
   return (
     <Section title="Blocked accounts">
       {users.length === 0 ? (
-        <p className="text-sm text-neutral-500">You haven&apos;t blocked anyone.</p>
+        <p className="text-sm text-muted-foreground">You haven&apos;t blocked anyone.</p>
       ) : (
         <ul className="space-y-3">
           {users.map((u) => (
@@ -362,7 +364,7 @@ function BlockedSection({ initial }: { initial: BlockedUser[] }) {
               <Avatar url={u.avatar_url} name={u.display_name || u.username} size={40} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">@{u.username}</p>
-                {u.display_name && <p className="truncate text-sm text-neutral-500">{u.display_name}</p>}
+                {u.display_name && <p className="truncate text-sm text-muted-foreground">{u.display_name}</p>}
               </div>
               <Button
                 type="button"

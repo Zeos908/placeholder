@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { checkUsername, type UsernameStatus } from "@/app/actions/profile";
 import { Avatar } from "@/components/Avatar";
 import { CameraIcon, CheckIcon, XIcon } from "@/components/icons";
-import { Chip, Field, Input, Spinner, Textarea } from "@/components/ui";
+import { Chip, Field, Input, Spinner, Textarea } from "@/components/legacy-ui";
 import { uploadAvatar } from "@/lib/avatar-upload";
 import { GRADE_OPTIONS } from "@/lib/grades";
 import { BIO_MAX } from "@/lib/profile-schema";
@@ -62,7 +62,7 @@ export function UsernameField({
   return (
     <Field label="Username" htmlFor={id} error={error}>
       <div className="relative">
-        <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-neutral-500">
+        <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
           @
         </span>
         <Input
@@ -91,7 +91,7 @@ export function UsernameField({
         <p
           id={`${id}-status`}
           aria-live="polite"
-          className={`text-xs ${good ? "text-neutral-500" : status === "checking" ? "text-neutral-400" : "text-red-600 dark:text-red-400"}`}
+          className={`text-xs ${good ? "text-muted-foreground" : status === "checking" ? "text-neutral-400" : "text-red-600 dark:text-red-400"}`}
         >
           {status === "checking" ? "Checking…" : STATUS_TEXT[status]}
         </p>
@@ -136,11 +136,11 @@ export function AvatarPicker({
       <button
         type="button"
         onClick={() => input.current?.click()}
-        className="group relative rounded-full focus-visible:ring-2 focus-visible:ring-accent-2 focus-visible:outline-none"
+        className="group relative rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         aria-label={url ? "Change profile photo" : "Add profile photo"}
       >
         <Avatar url={url} name={name} size={72} />
-        <span className="absolute -right-0.5 -bottom-0.5 flex size-7 items-center justify-center rounded-full border-2 border-bg bg-fg text-bg">
+        <span className="absolute -right-0.5 -bottom-0.5 flex size-7 items-center justify-center rounded-full border-2 border-background bg-foreground text-background">
           {busy ? <Spinner className="size-3" /> : <CameraIcon className="size-3.5" />}
         </span>
       </button>
@@ -148,7 +148,7 @@ export function AvatarPicker({
         <button
           type="button"
           onClick={() => input.current?.click()}
-          className="font-semibold text-accent-2"
+          className="font-semibold text-link"
           disabled={busy}
         >
           {url ? "Change photo" : "Add a photo"}
@@ -157,7 +157,7 @@ export function AvatarPicker({
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="block text-neutral-500 hover:text-fg"
+            className="block text-muted-foreground hover:text-foreground"
             disabled={busy}
           >
             Remove
@@ -197,7 +197,7 @@ export function GradeSelect({
         id={id}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
-        className="h-11 w-full rounded-lg border border-line bg-neutral-50 px-3 text-sm text-fg focus:border-neutral-400 focus:outline-none dark:bg-neutral-950"
+        className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm text-foreground focus:border-neutral-400 focus:outline-none"
       >
         <option value="">Prefer not to say</option>
         {groups.map((g) => (
@@ -260,13 +260,13 @@ export function SkillsInput({ value, onChange }: { value: string[]; onChange: (v
           {value.map((s) => (
             <li
               key={s}
-              className="inline-flex items-center gap-1 rounded-full bg-neutral-100 py-1 pr-1.5 pl-3 text-sm dark:bg-neutral-900"
+              className="inline-flex items-center gap-1 rounded-full bg-surface py-1 pr-1.5 pl-3 text-sm"
             >
               {s}
               <button
                 type="button"
                 onClick={() => onChange(value.filter((v) => v !== s))}
-                className="rounded-full p-0.5 text-neutral-500 hover:text-fg"
+                className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
                 aria-label={`Remove ${s}`}
               >
                 <XIcon className="size-3.5" />
@@ -327,7 +327,7 @@ export function LocationFields({
       <div className="space-y-1.5">
         <label htmlFor={radiusId} className="flex justify-between text-sm font-medium">
           <span>How far you&apos;ll travel</span>
-          <span className="text-neutral-500">{radius} mi</span>
+          <span className="text-muted-foreground">{radius} mi</span>
         </label>
         <input
           id={radiusId}

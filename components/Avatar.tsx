@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cx } from "@/components/ui";
+import { cx } from "@/components/legacy-ui";
 
 /**
  * Round avatar with an initial fallback. Plain <img>: avatars are tiny, pre-sized files.

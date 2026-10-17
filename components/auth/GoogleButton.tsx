@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { GoogleIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/legacy-ui";
 import { createClient } from "@/lib/supabase/client";
 
 /** Starts Google OAuth; Supabase redirects back to /auth/callback, then on to `next`. */
@@ -41,10 +41,10 @@ export function GoogleButton({ next, label }: { next: string; label: string }) {
 
 export function OrDivider() {
   return (
-    <div className="flex items-center gap-4 py-1 text-xs font-semibold text-neutral-500" aria-hidden>
-      <span className="h-px flex-1 bg-line" />
+    <div className="flex items-center gap-4 py-1 text-xs font-semibold text-muted-foreground" aria-hidden>
+      <span className="h-px flex-1 bg-border" />
       OR
-      <span className="h-px flex-1 bg-line" />
+      <span className="h-px flex-1 bg-border" />
     </div>
   );
 }

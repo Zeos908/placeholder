@@ -11,7 +11,8 @@ import {
   SkillsInput,
   UsernameField,
 } from "@/components/profile/fields";
-import { Button, Field, Input, Notice } from "@/components/ui";
+import { Wordmark } from "@/components/common/Wordmark";
+import { Button, Field, Input, Notice } from "@/components/legacy-ui";
 import type { UsernameStatus } from "@/app/actions/profile";
 
 interface Draft {
@@ -101,12 +102,12 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
   return (
     <main className="flex min-h-dvh flex-col px-4 pt-4 pb-6">
       <header className="flex items-center justify-between py-2">
-        <span className="text-accent-gradient text-xl font-bold tracking-tight">placeholder</span>
+        <Wordmark size={30} />
         <button
           type="button"
           onClick={finish}
           disabled={pending}
-          className="text-sm text-neutral-500 hover:text-fg disabled:opacity-50"
+          className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
         >
           Skip setup
         </button>
@@ -123,18 +124,18 @@ export function OnboardingFlow({ userId, initial }: { userId: string; initial: D
         {STEPS.map((_, i) => (
           <span
             key={i}
-            className={`h-1 flex-1 rounded-full ${i <= step ? "bg-accent-gradient" : "bg-line"}`}
+            className={`h-1 flex-1 rounded-full ${i <= step ? "bg-accent-gradient" : "bg-border"}`}
           />
         ))}
       </div>
 
       <section className="mt-8 flex-1 space-y-6" aria-live="polite">
         <div className="space-y-1">
-          <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Step {step + 1} of {STEPS.length}
           </p>
           <h1 className="text-2xl font-bold">{STEPS[step].title}</h1>
-          <p className="text-sm text-neutral-500">{STEPS[step].subtitle}</p>
+          <p className="text-sm text-muted-foreground">{STEPS[step].subtitle}</p>
         </div>
 
         {step === 0 && (

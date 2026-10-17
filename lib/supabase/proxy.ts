@@ -15,6 +15,13 @@ function isPublic(path: string) {
  * Unauthenticated page requests go to /login?next=…; unauthenticated API calls get a 401.
  */
 export async function updateSession(request: NextRequest) {
+  // Mock API mode: a fake user is always signed in, and there's no Supabase to talk to.
+  if (process.env.NEXT_PUBLIC_MOCK_API === "1") {
+    const path = request.nextUrl.pathname;
+    if (AUTH_PAGES.includes(path)) return NextResponse.redirect(new URL("/feed", request.url));
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

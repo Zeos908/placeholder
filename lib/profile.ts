@@ -1,7 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { MOCK_API } from "@/lib/mock";
 import { createClient } from "@/lib/supabase/server";
+import { MOCK_ME } from "@/mocks/fixtures/people";
 
 export interface Profile {
   id: string;
@@ -24,8 +26,16 @@ export interface Profile {
   created_at: string;
 }
 
+// Mock API mode (spec §20): a fake signed-in, onboarded user; Supabase is never called.
+const MOCK_PROFILE: Profile = {
+  ...MOCK_ME,
+  onboarded_at: "2026-01-01T00:00:00.000Z",
+  created_at: "2026-01-01T00:00:00.000Z",
+};
+
 /** The signed-in user's id and email, or null. Deduped per request. */
 export const getSessionUser = cache(async () => {
+  if (MOCK_API) return { id: MOCK_ME.id, email: MOCK_ME.email };
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   return data.user ? { id: data.user.id, email: data.user.email ?? null } : null;
@@ -33,6 +43,7 @@ export const getSessionUser = cache(async () => {
 
 /** The signed-in user's full profile row (owner-only columns included). Deduped per request. */
 export const getMyProfile = cache(async (): Promise<Profile | null> => {
+  if (MOCK_API) return MOCK_PROFILE;
   const user = await getSessionUser();
   if (!user) return null;
   const supabase = await createClient();

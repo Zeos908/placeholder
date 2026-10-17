@@ -93,6 +93,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 }
 
 export async function signOut() {
+  if (process.env.NEXT_PUBLIC_MOCK_API === "1") redirect("/feed"); // the mock user can't sign out
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");

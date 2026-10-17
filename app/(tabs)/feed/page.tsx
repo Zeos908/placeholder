@@ -15,10 +15,10 @@ export default async function FeedPage() {
         ✨
       </p>
       <h1 className="text-xl font-semibold">You&apos;re in, {name}</h1>
-      <p className="max-w-xs text-sm text-neutral-500">
+      <p className="max-w-xs text-sm text-muted-foreground">
         Your feed of opportunities is on its way. In the meantime, you can update your interests and
         location in{" "}
-        <Link href="/settings" className="font-medium text-accent-2">
+        <Link href="/settings" className="font-medium text-link">
           Settings
         </Link>
         .

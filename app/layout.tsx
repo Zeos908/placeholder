@@ -1,8 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Grand_Hotel, Inter } from "next/font/google";
+import { Providers } from "@/components/providers";
+import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+});
+const grandHotel = Grand_Hotel({ subsets: ["latin"], weight: "400", variable: "--font-grand-hotel" });
 
 export const metadata: Metadata = {
   title: "placeholder",
@@ -19,18 +26,14 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// Applies the theme before first paint so there's no light/dark flash.
-// "system" follows the OS; the saved preference is synced from profiles.theme after sign-in.
-const themeScript = `(function(){try{var t=localStorage.getItem('theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body className="min-h-dvh antialiased">
-        <div className="mx-auto min-h-dvh w-full max-w-[470px]">{children}</div>
+    <html lang="en" className={cn(inter.variable, grandHotel.variable)} suppressHydrationWarning>
+      <body>
+        <Providers>
+          {/* Phase F1 replaces this column with the mobile/desktop app shell. */}
+          <div className="mx-auto min-h-dvh w-full max-w-[470px]">{children}</div>
+        </Providers>
       </body>
     </html>
   );

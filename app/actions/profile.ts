@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { zipToLatLng } from "@/lib/geo";
+import { MOCK_API } from "@/lib/mock";
 import { getMyProfile, getSessionUser } from "@/lib/profile";
 import { profileUpdateSchema, USERNAME_RE, type ProfileUpdate } from "@/lib/profile-schema";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -14,7 +15,10 @@ export type ActionResult = { ok: true } | { ok: false; error: string; field?: st
 const NOT_SIGNED_IN: ActionResult = { ok: false, error: "Your session expired. Log in again." };
 
 /** Partial profile update shared by onboarding and Settings. */
+// In mock API mode these server actions don't touch Supabase. Phase F7 moves the screens that
+// use them onto the /api client (mocked by MSW), after which these short-circuits go away.
 export async function updateProfile(input: ProfileUpdate): Promise<ActionResult> {
+  if (MOCK_API) return { ok: true };
   const user = await getSessionUser();
   if (!user) return NOT_SIGNED_IN;
 
@@ -75,6 +79,7 @@ export type UsernameStatus = "available" | "taken" | "invalid" | "yours";
 export async function checkUsername(name: string): Promise<UsernameStatus> {
   const value = name.trim();
   if (!USERNAME_RE.test(value)) return "invalid";
+  if (MOCK_API) return "available";
   const profile = await getMyProfile();
   if (profile && profile.username.toLowerCase() === value.toLowerCase()) return "yours";
   const supabase = await createClient();
@@ -84,6 +89,7 @@ export async function checkUsername(name: string): Promise<UsernameStatus> {
 
 /** Marks onboarding done (whether the user filled things in or skipped) and opens the Feed. */
 export async function completeOnboarding(timezone?: string) {
+  if (MOCK_API) redirect("/feed");
   const user = await getSessionUser();
   if (!user) redirect("/login");
   const supabase = await createClient();
@@ -97,6 +103,7 @@ export async function completeOnboarding(timezone?: string) {
 }
 
 export async function unblockUser(userId: string): Promise<ActionResult> {
+  if (MOCK_API) return { ok: true };
   const user = await getSessionUser();
   if (!user) return NOT_SIGNED_IN;
   if (!z.uuid().safeParse(userId).success) return { ok: false, error: "Unknown user." };
@@ -117,6 +124,7 @@ export interface DeleteState {
 
 /** Permanently deletes the account. The user must type their username to confirm. */
 export async function deleteAccount(_prev: DeleteState, formData: FormData): Promise<DeleteState> {
+  if (MOCK_API) return { error: "Deleting the account isn't available in mock mode." };
   const profile = await getMyProfile();
   if (!profile) redirect("/login");
 

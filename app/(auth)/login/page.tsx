@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GoogleButton, OrDivider } from "@/components/auth/GoogleButton";
-import { Notice } from "@/components/ui";
+import { Wordmark } from "@/components/common/Wordmark";
+import { Notice } from "@/components/legacy-ui";
 import { isGoogleEnabled } from "@/lib/auth-providers";
 import { safeNext } from "@/lib/safe-next";
 import { LoginForm } from "./LoginForm";
@@ -19,10 +20,12 @@ export default async function LoginPage({
 
   return (
     <>
-      <section className="space-y-5 rounded-xl border border-line px-6 py-8 sm:px-8">
+      <section className="space-y-5 rounded-xl border border-border px-6 py-8 sm:px-8">
         <div className="space-y-2 text-center">
-          <h1 className="text-accent-gradient text-4xl font-bold tracking-tight">placeholder</h1>
-          <p className="text-sm text-neutral-500">
+          <h1 className="flex justify-center">
+            <Wordmark size={52} />
+          </h1>
+          <p className="text-sm text-muted-foreground">
             Internships, volunteering, events and scholarships, picked for you.
           </p>
         </div>
@@ -36,11 +39,11 @@ export default async function LoginPage({
         )}
         <LoginForm next={next} />
       </section>
-      <p className="rounded-xl border border-line px-6 py-5 text-center text-sm">
+      <p className="rounded-xl border border-border px-6 py-5 text-center text-sm">
         New here?{" "}
         <Link
           href={next === "/feed" ? "/signup" : `/signup?next=${encodeURIComponent(next)}`}
-          className="font-semibold text-accent-2"
+          className="font-semibold text-link"
         >
           Sign up
         </Link>
