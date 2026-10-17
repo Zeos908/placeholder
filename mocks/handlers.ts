@@ -413,7 +413,8 @@ export const handlers = [
 
     const stream = new ReadableStream({
       async start(ctrl) {
-        await wait(800); // "thinking"
+        // "thinking" before the first token
+        await new Promise((r) => setTimeout(r, isTest ? db().chatThinkMs : 800));
         if (/remind/i.test(content)) {
           // 9 AM two days before the deadline; if that's already past, 9 AM tomorrow.
           const at = new Date(l.deadline ? new Date(l.deadline).getTime() - 2 * 86_400_000 : Date.now());

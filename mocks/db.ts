@@ -213,6 +213,8 @@ function createDb() {
     notifications,
     chats,
     chatUsed: 6,
+    /** Test hook: how long the mock "thinks" under Vitest (the browser always waits 800 ms). */
+    chatThinkMs: 0,
     reminders,
     checklists,
     undo: new Map<string, { listingId: string; prev: MyRow | undefined }>(),

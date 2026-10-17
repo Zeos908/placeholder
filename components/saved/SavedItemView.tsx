@@ -1,9 +1,11 @@
 "use client";
 
-import { BookmarkMinus, EyeOff, Eye, Flag, MoreHorizontal, Share, Sparkles } from "lucide-react";
+import { BookmarkMinus, EyeOff, Eye, Flag, MoreHorizontal, Share } from "lucide-react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { ChatPanel } from "@/components/chat/ChatPanel";
+import { useKeyboardViewport } from "@/lib/use-visual-viewport";
 import { ErrorState } from "@/components/common/EmptyState";
 import { ReportDialog } from "@/components/common/ReportDialog";
 import { shareListing } from "@/components/feed/PostCard";
@@ -34,8 +36,31 @@ export function SavedItemView() {
   const [reportOpen, setReportOpen] = useState(false);
   const hide = useHideFromFriends();
   const unsave = useUnsave();
+  const keyboard = useKeyboardViewport();
+  const details = useRef<HTMLDivElement>(null);
+  const detailsTop = useRef(0);
 
   const saved = data?.state === "saved";
+
+  const jumpToReminders = useRef(false);
+
+  // A hidden tab loses its scroll position; put Details back where it was, or jump to
+  // Reminders when we got here from a "Reminder set" chip.
+  useLayoutEffect(() => {
+    if (tab !== "details" || !details.current) return;
+    if (jumpToReminders.current) {
+      jumpToReminders.current = false;
+      document.getElementById("reminders")?.scrollIntoView({ block: "start" });
+    } else {
+      details.current.scrollTop = detailsTop.current;
+    }
+  }, [tab]);
+
+  // Tapping a "Reminder set" chip in the chat switches to Details at the Reminders section.
+  function showReminders() {
+    jumpToReminders.current = true;
+    setTab("details");
+  }
 
   const menu = data && (
     <DropdownMenu>
@@ -76,7 +101,12 @@ export function SavedItemView() {
   );
 
   return (
-    <div className="mx-auto flex h-dvh max-w-[935px] flex-col">
+    <div
+      className="mx-auto flex h-dvh max-w-[935px] flex-col"
+      // With the phone keyboard open, pin the page to the visible area so the chat input sits
+      // right above the keyboard (spec §12.2).
+      style={keyboard ? { position: "fixed", insetInline: 0, top: keyboard.offsetTop, height: keyboard.height } : undefined}
+    >
       <PageHeader title={data?.listing.title ?? "Saved"} fallbackHref="/saved" right={menu} />
 
       {isPending ? (
@@ -106,8 +136,10 @@ export function SavedItemView() {
           </TabsPrimitive.List>
 
           <TabsPrimitive.Content
+            ref={details}
             value="details"
             forceMount
+            onScroll={(e) => (detailsTop.current = e.currentTarget.scrollTop)}
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain data-[state=inactive]:hidden"
           >
             <ItemDetails detail={data} />
@@ -115,18 +147,14 @@ export function SavedItemView() {
           <TabsPrimitive.Content
             value="chat"
             forceMount
-            className="min-h-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"
+            className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
           >
-            {/* Phase F5 builds the assistant chat here. */}
-            <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center text-muted-foreground">
-              <span className="bg-accent-gradient flex size-12 items-center justify-center rounded-full text-white">
-                <Sparkles className="size-6" />
-              </span>
-              <p>
-                Ask anything about <span className="italic">{data.listing.title}</span>. Chat arrives in the next
-                phase.
-              </p>
-            </div>
+            <ChatPanel
+              listingId={listingId}
+              title={data.listing.title}
+              active={tab === "chat"}
+              onShowReminders={showReminders}
+            />
           </TabsPrimitive.Content>
         </TabsPrimitive.Root>
       )}

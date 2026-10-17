@@ -25,6 +25,9 @@ window.matchMedia ??= ((query: string) => ({
   dispatchEvent: () => false,
 })) as unknown as typeof window.matchMedia;
 Element.prototype.scrollIntoView ??= () => {};
+Element.prototype.scrollTo ??= function (this: Element, opts?: ScrollToOptions | number) {
+  if (typeof opts === "object" && opts.top !== undefined) this.scrollTop = opts.top;
+};
 Element.prototype.hasPointerCapture ??= () => false;
 Element.prototype.releasePointerCapture ??= () => {};
 
