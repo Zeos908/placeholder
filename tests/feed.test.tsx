@@ -141,7 +141,8 @@ describe("red dots", () => {
   it("the bell dot clears once the notifications list has been opened", async () => {
     expect((await api.me()).badges.unreadNotifications).toBeGreaterThan(0);
     renderWith(<NotificationsList />);
-    await screen.findByText("Today");
+    // Section headings depend on the clock (just after midnight nothing is "Today"); wait for rows.
+    await screen.findAllByRole("listitem");
     await waitFor(async () => expect((await api.me()).badges.unreadNotifications).toBe(0), { timeout: 3000 });
   });
 });

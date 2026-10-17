@@ -1,42 +1,78 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { Bookmark } from "lucide-react";
 import Link from "next/link";
-import { MiniTile } from "@/components/common/MiniTile";
-import { ListSkeleton } from "@/components/tabs/FeedTab";
-import { api } from "@/lib/api";
-import { deadlineInfo } from "@/lib/format";
+import { useState } from "react";
+import { EmptyState, ErrorState } from "@/components/common/EmptyState";
+import { FilterChips } from "@/components/saved/FilterChips";
+import { ListingRow, RowsSkeleton } from "@/components/saved/SavedRow";
+import { StatusPill, StatusSheet } from "@/components/saved/StatusSheet";
+import { SwipeToUnsave } from "@/components/saved/SwipeToUnsave";
 import { TYPE_META } from "@/lib/opp";
-import { qk, staleTimes } from "@/lib/queries";
+import { useSaved, useUnsave, type SavedFilter } from "@/lib/saved";
+import { useUi } from "@/lib/store";
+import type { SavedItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-// TEMPORARY (F1): plain saved list for shell testing. Phase F4 builds the real Saved tab.
+/** Saved tab (spec §9.6, §11): deadline-sorted list, type filters, status, swipe to unsave. */
 export function SavedTab() {
-  const { data, isPending } = useQuery({
-    queryKey: qk.saved("all"),
-    queryFn: () => api.saved(),
-    staleTime: staleTimes.saved,
-  });
-  if (isPending) return <ListSkeleton />;
+  const [filter, setFilter] = useState<SavedFilter>("all");
+  const { data, isPending, isError, refetch } = useSaved(filter);
+  const unsave = useUnsave();
+  const [statusFor, setStatusFor] = useState<SavedItem | null>(null);
+  const topBarVisible = useUi((s) => s.topBarVisible);
+
   return (
-    <ul className="py-2">
-      {data?.map(({ listing }) => {
-        const due = deadlineInfo(listing.deadline);
-        return (
-          <li key={listing.id}>
-            <Link href={`/saved/${listing.id}`} className="flex h-[72px] items-center gap-3 px-4 hover:bg-surface">
-              <MiniTile type={listing.type} size={56} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold">{listing.title}</span>
-                <span className="block truncate text-muted-foreground">
-                  {listing.org_name} · {TYPE_META[listing.type].label}
-                </span>
-              </span>
-              <span className={cn("text-xs", due.urgent ? "text-danger" : "text-muted-foreground")}>{due.label}</span>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <>
+      <div className="flex h-14 items-center justify-between px-4">
+        <h1 className="text-xl leading-[26px] font-bold">Saved</h1>
+        <Link href="/saved/passed" className="font-semibold text-link">
+          Passed
+        </Link>
+      </div>
+
+      {/* Sticky under the mobile top bar while it's showing; at the very top otherwise. */}
+      <div
+        className={cn(
+          "sticky z-30 border-b border-border bg-background transition-[top] duration-200 ease-ig md:top-0",
+          topBarVisible ? "top-14" : "top-0",
+        )}
+      >
+        <FilterChips value={filter} onChange={setFilter} />
+      </div>
+
+      {isPending ? (
+        <RowsSkeleton />
+      ) : isError ? (
+        <ErrorState message="Couldn't load your saved items." onRetry={() => refetch()} />
+      ) : data.length === 0 ? (
+        <EmptyState
+          icon={Bookmark}
+          title={filter === "all" ? "Nothing saved yet" : `No ${TYPE_META[filter].label.toLowerCase()}s saved`}
+          body="Swipe right or double-tap a post to save it."
+        />
+      ) : (
+        <ul className="py-1" aria-label="Saved items">
+          {data.map((item) => (
+            <li key={item.listing.id}>
+              <SwipeToUnsave label={item.listing.title} onUnsave={() => void unsave(item)}>
+                <ListingRow
+                  listing={item.listing}
+                  href={`/saved/${item.listing.id}`}
+                  right={<StatusPill status={item.app_status} onClick={() => setStatusFor(item)} />}
+                />
+              </SwipeToUnsave>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <StatusSheet
+        listingId={statusFor?.listing.id ?? null}
+        current={statusFor?.app_status ?? null}
+        open={!!statusFor}
+        onOpenChange={(o) => !o && setStatusFor(null)}
+      />
+    </>
   );
 }
