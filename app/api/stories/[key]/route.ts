@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { toFeedPost, type FeedRow } from "@/lib/server/feed-rows";
+import { toFeedPost, withMedia, type FeedRow } from "@/lib/server/feed-rows";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -15,5 +15,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ key: st
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("story_deck", { p_key: parsed.data, p_limit: 50 });
   if (error) return NextResponse.json({ error: "Couldn't load this story." }, { status: 500 });
-  return NextResponse.json((data as FeedRow[]).map(toFeedPost));
+  return NextResponse.json(await withMedia(supabase, (data as FeedRow[]).map(toFeedPost)));
 }

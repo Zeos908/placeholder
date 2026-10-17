@@ -1,5 +1,5 @@
 /**
- * Media resolver (front-end spec §9.4): image → test video by type → text post.
+ * Media resolver (front-end spec §9.4): listing video → listing image → test video by type → text post.
  *
  * ─── README: adding test videos ────────────────────────────────────────────────────────────
  * 1. Export each clip as MP4 (H.264 video + AAC audio), 4:5 portrait at 720×900 or 1080×1350,
@@ -55,9 +55,11 @@ function resolve(base: string, path: string): string {
 }
 
 export function getListingMedia(
-  listing: Pick<Listing, "id" | "type" | "image_url" | "image_alt">,
+  listing: Pick<Listing, "id" | "type" | "image_url" | "image_alt"> & Pick<Partial<Listing>, "video_url">,
   manifest: MediaManifest = defaultManifest as MediaManifest,
 ): Media {
+  // The listing's own clip (image_url is its poster), then its photo, then test media, then text.
+  if (listing.video_url) return { kind: "video", src: listing.video_url, poster: listing.image_url ?? undefined };
   if (listing.image_url) return { kind: "image", src: listing.image_url, alt: listing.image_alt ?? undefined };
   const clips = manifest[listing.type] ?? [];
   if (clips.length) {

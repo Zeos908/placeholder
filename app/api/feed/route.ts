@@ -1,4 +1,4 @@
-import { toFeedPost, type FeedRow } from "@/lib/server/feed-rows";
+import { toFeedPost, withMedia, type FeedRow } from "@/lib/server/feed-rows";
 import { authed, check, HttpError, route } from "@/lib/server/route";
 import type { FeedPage } from "@/lib/types";
 
@@ -30,7 +30,7 @@ export const GET = route(async (req) => {
 
   const last = rows.at(-1);
   const page: FeedPage = {
-    posts: rows.map(toFeedPost),
+    posts: await withMedia(supabase, rows.map(toFeedPost)),
     nextCursor: rows.length === PAGE && last ? encode({ score: last.score, id: last.id, asof: last.asof }) : null,
   };
   return page;

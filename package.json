@@ -12,6 +12,7 @@
     "test:rls": "vitest run --config vitest.rls.config.ts",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "db:push": "supabase db push",
+    "media:fetch": "node --env-file=.env.local scripts/fetch-media.mjs",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts",
     "dev:mock": "cross-env NEXT_PUBLIC_MOCK_API=1 next dev --turbopack",

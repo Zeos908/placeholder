@@ -10,7 +10,8 @@ import type { Listing } from "@/lib/types";
 import { videoManager } from "@/lib/video-manager";
 import { cn } from "@/lib/utils";
 
-type MediaListing = Pick<Listing, "id" | "type" | "title" | "org_name" | "deadline" | "image_url" | "image_alt">;
+type MediaListing = Pick<Listing, "id" | "type" | "title" | "org_name" | "deadline" | "image_url" | "image_alt"> &
+  Pick<Partial<Listing>, "video_url">;
 
 /** 4:5 media for a listing (spec §9.4–9.5): image, test video, or the text post fallback. */
 export function PostMedia({

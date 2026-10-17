@@ -49,6 +49,11 @@ export interface Listing {
   amount_usd: number | null;
   image_url: string | null;
   image_alt: string | null;
+  /** A short portrait clip (≤ 20 s); image_url is then its poster frame. */
+  video_url?: string | null;
+  /** e.g. "Video by Jane Doe on Pexels", linked to media_credit_url. */
+  media_credit?: string | null;
+  media_credit_url?: string | null;
   created_at: string;
 }
 

@@ -22,6 +22,15 @@ const listing = (id: string, type: "internship" | "volunteer" | "event", image_u
 });
 
 describe("getListingMedia", () => {
+  it("plays the listing's own clip first, with its image as the poster", () => {
+    const l = { ...listing("a1", "internship", "https://img.example.com/poster.jpg"), video_url: "https://vid.example.com/clip.mp4" };
+    expect(getListingMedia(l, manifest)).toEqual({
+      kind: "video",
+      src: "https://vid.example.com/clip.mp4",
+      poster: "https://img.example.com/poster.jpg",
+    });
+  });
+
   it("prefers the listing's own image over any video", () => {
     expect(getListingMedia(listing("a", "internship", "https://img/x.webp"), manifest)).toEqual({
       kind: "image",

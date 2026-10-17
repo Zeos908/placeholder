@@ -3,7 +3,7 @@ import type { Listing, ListingSummary, SavedItem } from "@/lib/types";
 
 /** Listing columns the client sees (no source, dedupe hash, prompts, or status). */
 export const LISTING_COLUMNS =
-  "id, url, title, org_name, org_logo_url, type, description, summary, tags, location_text, lat, lng, is_remote, grade_min, grade_max, eligibility_text, deadline, starts_at, ends_at, compensation_text, amount_usd, image_url, image_alt, created_at";
+  "id, url, title, org_name, org_logo_url, type, description, summary, tags, location_text, lat, lng, is_remote, grade_min, grade_max, eligibility_text, deadline, starts_at, ends_at, compensation_text, amount_usd, image_url, image_alt, video_url, media_credit, media_credit_url, created_at";
 
 export const SUMMARY_COLUMNS = "id, title, type, org_name, image_url, image_alt, deadline";
 

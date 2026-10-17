@@ -115,6 +115,17 @@ export function ItemDetails({ detail }: { detail: ListingDetail }) {
             Open original listing <ExternalLink />
           </a>
         </Button>
+        {listing.media_credit && (
+          <p className="-mt-2 text-center text-xs text-muted-foreground">
+            {listing.media_credit_url ? (
+              <a href={listing.media_credit_url} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
+                {listing.media_credit}
+              </a>
+            ) : (
+              listing.media_credit
+            )}
+          </p>
+        )}
 
         {/* 7. hide from friends */}
         {saved && (
