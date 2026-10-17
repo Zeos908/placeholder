@@ -1,11 +1,17 @@
 "use client";
 
 import { Feed } from "@/components/feed/Feed";
+import { StoriesRow } from "@/components/feed/StoriesRow";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Phase F3 adds the stories row above the posts.
+/** Feed tab: stories row (scrolls away with the feed), then posts. */
 export function FeedTab() {
-  return <Feed />;
+  return (
+    <>
+      <StoriesRow />
+      <Feed />
+    </>
+  );
 }
 
 /** Generic row skeleton (spec §8: 56 px square + 2 bars), used by the temporary tab lists. */

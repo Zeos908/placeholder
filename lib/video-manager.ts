@@ -17,6 +17,9 @@ const entries = new Map<HTMLVideoElement, Entry>();
 let current: Entry | null = null;
 let observer: IntersectionObserver | null = null;
 let scheduled = false;
+// While a full-screen layer (the story deck) is open, only its videos may play: the observer
+// can't tell that the feed underneath is covered.
+let exclusiveGroup: string | null = null;
 
 function io() {
   if (!observer && typeof IntersectionObserver !== "undefined") {
@@ -47,6 +50,7 @@ function evaluate() {
   let best: Entry | null = null;
   for (const e of entries.values()) {
     if (!e.enabled || e.ratio < PLAY_AT) continue;
+    if (exclusiveGroup && e.group !== exclusiveGroup) continue;
     if (!best || e.ratio > best.ratio || (e.ratio === best.ratio && e.index < best.index)) best = e;
   }
   for (const e of entries.values()) if (e !== best && !e.el.paused) e.el.pause();
@@ -61,6 +65,11 @@ function evaluate() {
 }
 
 export const videoManager = {
+  /** Only videos in `group` may play until called again with null. */
+  setExclusiveGroup(group: string | null) {
+    exclusiveGroup = group;
+    schedule();
+  },
   register(el: HTMLVideoElement, opts: Omit<Entry, "el" | "ratio">) {
     entries.set(el, { el, ratio: 0, ...opts });
     io()?.observe(el);

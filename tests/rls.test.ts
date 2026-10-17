@@ -200,6 +200,50 @@ describe("friend_saves visibility", () => {
   });
 });
 
+describe("stories (front-end spec §10)", () => {
+  type Story = { key: string; count: number; unseen_count: number; avatars: string[] | null };
+
+  it("closing story only has unswiped items due within 7 days", async () => {
+    const deck = (await must(b.client.rpc("story_deck", { p_key: "closing" }))) as {
+      id: string;
+      deadline: string;
+    }[];
+    expect(deck.length).toBeGreaterThan(0);
+    const week = Date.now() + 7 * 86_400_000;
+    expect(deck.every((l) => new Date(l.deadline).getTime() <= week)).toBe(true);
+  });
+
+  it("friends story shows what an accepted friend saved, with their avatar", async () => {
+    const stories = (await must(b.client.rpc("get_stories"))) as Story[];
+    const friends = stories.find((s) => s.key === "friends");
+    expect(friends?.count).toBeGreaterThan(0);
+    const deck = (await must(b.client.rpc("story_deck", { p_key: "friends" }))) as { id: string }[];
+    expect(deck.map((l) => l.id)).toContain(listingId);
+  });
+
+  it("C (no friends) has no friends story", async () => {
+    const stories = (await must(c.client.rpc("get_stories"))) as Story[];
+    expect(stories.find((s) => s.key === "friends")).toBeUndefined();
+  });
+
+  it("near story is left out without a location", async () => {
+    const stories = (await must(c.client.rpc("get_stories"))) as Story[];
+    expect(stories.find((s) => s.key === "near")).toBeUndefined();
+  });
+
+  it("mark_seen clears unseen counts but never touches saved items", async () => {
+    const deck = (await must(b.client.rpc("story_deck", { p_key: "closing" }))) as { id: string }[];
+    await must(b.client.rpc("mark_seen", { p_ids: [...deck.map((l) => l.id), listingId] }));
+    const stories = (await must(b.client.rpc("get_stories"))) as Story[];
+    expect(stories.find((s) => s.key === "closing")?.unseen_count).toBe(0);
+    // A's saved row is A's; B's own rows for these listings are now 'seen'.
+    const rows = await must(b.client.from("user_listings").select("state").in("listing_id", deck.map((l) => l.id)));
+    expect((rows as { state: string }[]).every((r) => r.state === "seen")).toBe(true);
+    const aRow = await must(admin.from("user_listings").select("state").eq("user_id", a.id).eq("listing_id", listingId).single());
+    expect((aRow as { state: string }).state).toBe("saved");
+  });
+});
+
 describe("blocking", () => {
   it("block removes the friendship and hides both profiles", async () => {
     await must(a.client.from("blocks").insert({ blocker_id: a.id, blocked_id: b.id }));

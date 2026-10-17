@@ -1,6 +1,5 @@
 "use client";
 
-import { useDrag } from "@use-gesture/react";
 import { animate, motion, useMotionValue, useTransform, type MotionValue } from "framer-motion";
 import {
   createContext,
@@ -11,42 +10,42 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import { COMMIT_FRACTION, EASE, SPRING, useSwipeGesture } from "@/components/feed/useSwipeGesture";
 import { onSwipeUndone } from "@/lib/swipe-events";
 import type { SwipeDirection } from "@/lib/types";
 
-const AXIS_LOCK = 12; // px before deciding horizontal vs vertical
-const COMMIT_FRACTION = 0.3; // of card width
-const COMMIT_VELOCITY = 0.5; // px/ms
 const MAX_ROTATE = 6; // degrees
-const SPRING = { type: "spring", stiffness: 400, damping: 32 } as const;
-const EASE = [0.2, 0, 0, 1] as const;
 
 export interface SwipeHandle {
   /** Same as a committed swipe: bookmark button (right) and "…" → Pass (left). */
   fling: (direction: SwipeDirection) => void;
 }
 
-interface SwipeCtx {
+export interface SwipeCtx {
   x: MotionValue<number>;
   width: () => number;
   /** True right after a horizontal drag, so the release doesn't count as a tap. */
   dragged: () => boolean;
 }
 
-const SwipeContext = createContext<SwipeCtx | null>(null);
+export const SwipeContext = createContext<SwipeCtx | null>(null);
 export const useSwipeContext = () => useContext(SwipeContext);
 
+/** Rotation for a dragged card: up to ±6° at a full card width. */
+export function useSwipeRotate(x: MotionValue<number>, width: () => number) {
+  return useTransform(x, (v) => Math.max(-1, Math.min(1, v / width())) * MAX_ROTATE);
+}
+
 /**
- * Horizontal swipe on a post (build spec §9.3). The card has `touch-action: pan-y`, so vertical
- * movement is always the browser's native scroll; after 12 px a horizontal lock takes over.
- * Commit at 30% width or 0.5 px/ms: fly off (200 ms), collapse the slot (200 ms), then onExited.
+ * Horizontal swipe on a feed post (build spec §9.3). Commit at 30% width or 0.5 px/ms: fly off
+ * (200 ms), collapse the slot (200 ms), then onExited. Undo during the fly-off cancels it.
  */
 export const SwipeWrapper = forwardRef<
   SwipeHandle,
   {
-    children: ReactNode;
     /** Listing id: an Undo for it cancels a fly-off that's still running. */
     id: string;
+    children: ReactNode;
     onCommit: (direction: SwipeDirection) => void;
     onExited: () => void;
     disabled?: boolean;
@@ -55,13 +54,11 @@ export const SwipeWrapper = forwardRef<
   const outer = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const widthRef = useRef(375);
-  const lock = useRef<"x" | "y" | null>(null);
-  const draggedAt = useRef(0);
   const flying = useRef(false);
   const run = useRef(0); // bumps on undo so an in-flight fling knows it was cancelled
   const running = useRef<{ stop: () => void }[]>([]);
-
-  const rotate = useTransform(x, (v) => Math.max(-1, Math.min(1, v / widthRef.current)) * MAX_ROTATE);
+  const width = () => widthRef.current;
+  const rotate = useSwipeRotate(x, width);
 
   async function fling(direction: SwipeDirection) {
     if (flying.current) return;
@@ -108,49 +105,19 @@ export const SwipeWrapper = forwardRef<
 
   useImperativeHandle(ref, () => ({ fling }));
 
-  const bind = useDrag(
-    ({ first, last, canceled, movement: [mx, my], velocity: [vx], direction: [dx], cancel }) => {
-      if (disabled || flying.current) return;
-      if (first) {
-        lock.current = null;
-        widthRef.current = outer.current?.offsetWidth ?? widthRef.current;
-      }
-      if (!lock.current) {
-        if (Math.hypot(mx, my) < AXIS_LOCK) return;
-        lock.current = Math.abs(mx) > Math.abs(my) ? "x" : "y";
-        if (lock.current === "y") {
-          cancel(); // let the page scroll
-          return;
-        }
-      }
-      if (lock.current !== "x") return;
-      draggedAt.current = Date.now();
-
-      if (!last && !canceled) {
-        x.set(mx);
-        return;
-      }
-      const w = widthRef.current;
-      const far = Math.abs(mx) > w * COMMIT_FRACTION;
-      const flick = vx > COMMIT_VELOCITY && Math.sign(dx) === Math.sign(mx) && mx !== 0;
-      if (!canceled && (far || flick)) void fling(mx > 0 ? "right" : "left");
-      else animate(x, 0, SPRING);
-    },
-    { filterTaps: true, pointer: { capture: false } },
-  );
-
-  const ctx: SwipeCtx = {
+  const gesture = useSwipeGesture({
     x,
-    width: () => widthRef.current,
-    dragged: () => Date.now() - draggedAt.current < 250,
-  };
+    width: () => (widthRef.current = outer.current?.offsetWidth ?? widthRef.current),
+    disabled: () => Boolean(disabled) || flying.current,
+    onCommit: (dir) => void fling(dir),
+  });
 
   return (
-    <SwipeContext.Provider value={ctx}>
+    <SwipeContext.Provider value={{ x, width, dragged: gesture.dragged }}>
       <div ref={outer}>
         <motion.div style={{ x, rotate }} className="relative will-change-transform select-none">
           {/* Gesture handlers on a plain div: their DOM types clash with motion's own drag props. */}
-          <div {...bind()} style={{ touchAction: "pan-y" }}>
+          <div {...gesture.bind()} style={{ touchAction: "pan-y" }}>
             {children}
           </div>
         </motion.div>

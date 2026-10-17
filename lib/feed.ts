@@ -10,6 +10,12 @@ import type { FeedPage, FeedPost, SwipeDirection, SwipeResult } from "@/lib/type
 
 type FeedData = InfiniteData<FeedPage, string | null>;
 
+export interface SwipeOutcome {
+  request: Promise<SwipeResult>;
+  /** Restores the feed as it was, undoes the swipe on the server, refreshes related lists. */
+  undo: () => Promise<void>;
+}
+
 export function useFeed() {
   return useInfiniteQuery({
     queryKey: qk.feed,
@@ -58,14 +64,23 @@ export function useSwipeActions() {
   const setSaved = (id: string, saved: boolean) =>
     mapPosts((posts) => posts.map((p) => (p.id === id ? { ...p, saved } : p)));
 
-  /** Records the swipe. `keepInFeed` (double-tap save) marks it saved instead of removing it. */
-  function swipe(post: FeedPost, direction: SwipeDirection, { keepInFeed = false } = {}): Promise<SwipeResult> {
+  /**
+   * Records the swipe. `keepInFeed` (double-tap save) marks it saved instead of removing it;
+   * `removeNow` (story deck) takes it out of the feed right away since there's no fly-off there;
+   * `showToast: false` skips the Undo toast (the deck has its own Undo button).
+   */
+  function swipe(
+    post: FeedPost,
+    direction: SwipeDirection,
+    { keepInFeed = false, removeNow = false, showToast = true } = {},
+  ): SwipeOutcome {
     if (direction === "right") sound.save();
     else sound.pass();
     navigator.vibrate?.(10);
 
     const snapshot = queryClient.getQueryData<FeedData>(qk.feed);
     if (keepInFeed) setSaved(post.id, true);
+    if (removeNow) removeFromFeed(post.id);
 
     const request = api.swipe(post.id, direction);
     request.then(refreshRelated, () => {
@@ -73,24 +88,25 @@ export function useSwipeActions() {
       toast("Couldn't save. Try again.", { id: "swipe" });
     });
 
-    toast(direction === "right" ? "Saved" : "Passed", {
-      id: "swipe",
-      action: {
-        label: "Undo",
-        onClick: async () => {
-          emitSwipeUndone(post.id);
-          queryClient.setQueryData(qk.feed, snapshot);
-          try {
-            const { undoToken } = await request;
-            await api.undoSwipe(undoToken);
-          } catch {
-            toast("Couldn't undo. Try again.", { id: "swipe" });
-          }
-          refreshRelated();
-        },
-      },
-    });
-    return request;
+    async function undo() {
+      emitSwipeUndone(post.id);
+      queryClient.setQueryData(qk.feed, snapshot);
+      try {
+        const { undoToken } = await request;
+        await api.undoSwipe(undoToken);
+      } catch {
+        toast("Couldn't undo. Try again.", { id: "swipe" });
+      }
+      await refreshRelated();
+    }
+
+    if (showToast) {
+      toast(direction === "right" ? "Saved" : "Passed", {
+        id: "swipe",
+        action: { label: "Undo", onClick: () => void undo() },
+      });
+    }
+    return { request, undo };
   }
 
   /** Bookmark tapped on a post that's already saved (it stayed in the feed): put it back to unswiped. */
@@ -120,10 +136,27 @@ export function reportSeen(id: string) {
   if (reportedSeen.has(id)) return;
   reportedSeen.add(id);
   pendingSeen.add(id);
-  flushTimer ??= setTimeout(() => {
-    flushTimer = null;
-    const ids = [...pendingSeen];
-    pendingSeen.clear();
-    api.seen(ids).catch(() => ids.forEach((i) => reportedSeen.delete(i)));
-  }, 1500);
+  flushTimer ??= setTimeout(() => void flushSeen(), 1500);
+}
+
+/** Test helper: forget everything reported so far (module state outlives each test's mock db). */
+export function resetSeenTracking() {
+  if (flushTimer) clearTimeout(flushTimer);
+  flushTimer = null;
+  pendingSeen.clear();
+  reportedSeen.clear();
+}
+
+/** Sends any queued "seen" reports now (e.g. before refreshing story rings). */
+export async function flushSeen() {
+  if (flushTimer) clearTimeout(flushTimer);
+  flushTimer = null;
+  const ids = [...pendingSeen];
+  pendingSeen.clear();
+  if (!ids.length) return;
+  try {
+    await api.seen(ids);
+  } catch {
+    ids.forEach((i) => reportedSeen.delete(i));
+  }
 }

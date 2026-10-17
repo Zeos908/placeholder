@@ -21,18 +21,10 @@ export function PostSkeleton() {
   );
 }
 
-/** Feed first load (spec §8): stories row (4 circles + labels), then 2 post skeletons. */
+/** Feed first load (spec §8): 2 post skeletons (the stories row draws its own circles). */
 export function FeedSkeleton() {
   return (
     <div role="status" aria-label="Loading feed">
-      <div className="flex h-[104px] gap-3 overflow-hidden border-b border-border px-4 pt-3" aria-hidden>
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="flex w-[74px] shrink-0 flex-col items-center gap-2">
-            <Skeleton className="size-[66px] rounded-full" />
-            <Skeleton className="h-2.5 w-12" />
-          </div>
-        ))}
-      </div>
       <PostSkeleton />
       <PostSkeleton />
     </div>
