@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Paths reachable without signing in. Everything else requires a session.
-const PUBLIC_PREFIXES = ["/login", "/signup", "/auth/", "/invite/", "/api/health"];
+const PUBLIC_PREFIXES = ["/login", "/signup", "/auth/", "/invite/", "/api/health", "/api/cron/"];
 // Signed-in users get sent from these to the app.
 const AUTH_PAGES = ["/login", "/signup"];
 

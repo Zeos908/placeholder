@@ -41,6 +41,7 @@ for how prompts are logged, and mention it in the app's privacy policy (§14.3).
 ```
 npm run dev            # terminal shows "[ai] CHAT_MODEL found on NIM: ..."
 npm run test:rls       # Phase 1 RLS tests against your Supabase project
+npm run test:e2e       # API checks against the running dev server (real mode) + Supabase
 npm run typecheck
 ```
 Open http://localhost:3000 (wordmark) and http://localhost:3000/api/health (model check).
@@ -67,3 +68,12 @@ then open `/api/health` on the deployed URL.
   - Friend/block helper functions only answer about the signed-in user, so nobody can probe
     whether two other people are friends.
 - **Age gate**: email/password sign-up has no 13+ check; consider adding one before launch (§14.4).
+- **Web push + reminders cron** (F8): `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and
+  `CRON_SECRET` were generated into `.env.local`; copy them to Vercel too. Reminders are sent by
+  `GET /api/cron/reminders` with `Authorization: Bearer $CRON_SECRET`. It needs to run every 5
+  minutes after deploy: Vercel Hobby cron only runs daily, so schedule it from Supabase
+  (`pg_cron` + `pg_net` calling the deployed URL) or an external cron.
+- **Chat** runs with Nemotron's thinking off (`reasoning: false`) so answers start streaming
+  quickly; tool calls (`create_reminder`, `create_checklist`) are validated server-side, then the
+  model gets one more round to say what it did. The student's zip and coordinates are never sent.
+- **Sign-in links** also work in Supabase's `token_hash` form (`/auth/callback?token_hash=…&type=…`).

@@ -190,7 +190,7 @@ export const api = {
   notifications: () => get<AppNotification[]>("/api/notifications"),
   markNotificationsRead: (ids: string[]) => patch<{ ok: true }>("/api/notifications", { ids }),
   pushSubscribe: (sub: PushSubscriptionJSON) => post<{ ok: true }>("/api/push/subscribe", sub),
-  pushUnsubscribe: () => del<{ ok: true }>("/api/push/subscribe"),
+  pushUnsubscribe: (endpoint?: string) => del<{ ok: true }>(`/api/push/subscribe${qs({ endpoint })}`),
 
   // ---- safety
   report: (target_type: "user" | "listing", target_id: string, reason: ReportReason, details?: string) =>

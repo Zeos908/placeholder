@@ -36,7 +36,7 @@ function renderWith(ui: ReactNode, active = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <ShellUserContext.Provider value={{ username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
+      <ShellUserContext.Provider value={{ id: "me", username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
         <TabActiveContext.Provider value={{ tab: "friends", active }}>{ui}</TabActiveContext.Provider>
       </ShellUserContext.Provider>
       <Toaster />

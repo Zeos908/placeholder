@@ -9,7 +9,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <>
       <ThemeSync theme={profile.theme} />
       <AppShell
-        user={{ username: profile.username, display_name: profile.display_name, avatar_url: profile.avatar_url }}
+        user={{ id: profile.id, username: profile.username, display_name: profile.display_name, avatar_url: profile.avatar_url }}
       >
         {children}
       </AppShell>

@@ -26,7 +26,7 @@ vi.mock("next/link", () => ({
 
 function Harness() {
   return (
-    <AppShell user={{ username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
+    <AppShell user={{ id: "me", username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
       <TabsLayout>{null}</TabsLayout>
     </AppShell>
   );

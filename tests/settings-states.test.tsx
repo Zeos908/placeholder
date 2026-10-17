@@ -41,7 +41,7 @@ function renderWith(ui: ReactNode) {
   const tree = (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={client}>
-        <ShellUserContext.Provider value={{ username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
+        <ShellUserContext.Provider value={{ id: "me", username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
           <TabActiveContext.Provider value={{ tab: "feed", active: true }}>{ui}</TabActiveContext.Provider>
         </ShellUserContext.Provider>
       </QueryClientProvider>

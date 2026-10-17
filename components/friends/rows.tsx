@@ -54,7 +54,7 @@ export function OverlapCard({ overlap, onOpen }: { overlap: OverlapItem; onOpen:
   const n = overlap.friend_count;
   return (
     <div className="mx-4 my-2 flex items-center gap-3 rounded-lg border border-border p-3">
-      <AvatarStack people={[{ id: "me", ...me }, ...overlap.friends.slice(0, 2)]} />
+      <AvatarStack people={[me, ...overlap.friends.slice(0, 2)]} />
       <p className="min-w-0 flex-1 text-[13px] leading-[18px]">
         You and{" "}
         <span className="font-semibold">

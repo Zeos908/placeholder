@@ -76,7 +76,8 @@ export async function disablePush(): Promise<PushState> {
     return "off";
   }
   const reg = await navigator.serviceWorker.getRegistration("/sw.js");
-  await (await reg?.pushManager.getSubscription())?.unsubscribe();
-  await api.pushUnsubscribe();
+  const sub = await reg?.pushManager.getSubscription();
+  await sub?.unsubscribe();
+  await api.pushUnsubscribe(sub?.endpoint);
   return "off";
 }

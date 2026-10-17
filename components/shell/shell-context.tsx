@@ -5,6 +5,7 @@ import type { TabKey } from "@/lib/store";
 
 /** Basic signed-in user info the shell needs before /api/me has loaded. */
 export interface ShellUser {
+  id: string;
   username: string;
   display_name: string | null;
   avatar_url: string | null;

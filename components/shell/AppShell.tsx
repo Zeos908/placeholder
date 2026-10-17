@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { ShellUserContext, type ShellUser } from "@/components/shell/shell-context";
+import { RealtimeNotifications } from "@/components/shell/RealtimeNotifications";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TAB_BAR_PADDING, TabBar } from "@/components/shell/TabBar";
 import { TopBar } from "@/components/shell/TopBar";
@@ -22,6 +23,7 @@ export function AppShell({ user, children }: { user: ShellUser; children: ReactN
 
   return (
     <ShellUserContext.Provider value={user}>
+      <RealtimeNotifications userId={user.id} />
       {tab && <TopBar />}
       <Sidebar />
       {tab ? (

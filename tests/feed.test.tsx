@@ -31,7 +31,7 @@ function renderWith(ui: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <ShellUserContext.Provider value={{ username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
+      <ShellUserContext.Provider value={{ id: "me", username: "alex", display_name: "Alex Rivera", avatar_url: null }}>
         <TabActiveContext.Provider value={{ tab: "feed", active: true }}>{ui}</TabActiveContext.Provider>
       </ShellUserContext.Provider>
       <Toaster />
@@ -130,7 +130,7 @@ describe("red dots", () => {
     const client = new QueryClient();
     render(
       <QueryClientProvider client={client}>
-        <ShellUserContext.Provider value={{ username: "alex", display_name: null, avatar_url: null }}>
+        <ShellUserContext.Provider value={{ id: "me", username: "alex", display_name: null, avatar_url: null }}>
         <TabActiveContext.Provider value={{ tab: "friends", active: false }}>
           <FriendsTab />
         </TabActiveContext.Provider>
