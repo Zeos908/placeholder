@@ -273,7 +273,7 @@ describe("chat on NIM (F5)", () => {
     const tool = events.find((e) => e.type === "tool");
     const reminders = await a.call<Reminder[]>(`/api/reminders?listingId=${savedId}`);
     console.log(
-      `[e2e] chat: ${events.filter((e) => e.type === "token").length} tokens, tool=${tool?.type === "tool" ? tool.message.content : "none"}, ai reminders=${reminders.body.filter((r) => r.source === "ai").length}`,
+      `[e2e] chat: ${done?.type === "done" ? done.message.content.split(/\s+/).length : 0} words, tool=${tool?.type === "tool" ? tool.message.content : "none"}, ai reminders=${reminders.body.filter((r) => r.source === "ai").length}`,
     );
     if (tool) expect(reminders.body.some((r) => r.source === "ai")).toBe(true);
 

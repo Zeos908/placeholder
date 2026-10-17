@@ -79,7 +79,7 @@ export const POST = route<{ listingId: string }>(async (req, { params }) => {
     userMessageId = saved.id;
 
     ctx.messages.push({ role: "user", content });
-    stream = chatStream(ctx.messages, { tools: TOOLS, reasoning: false, maxTokens: 1500, signal: req.signal });
+    stream = chatStream(ctx.messages, { tools: TOOLS, reasoning: false, maxTokens: 500, signal: req.signal });
     // Wait for the first event so "busy" can still be a plain 429 the client understands.
     first = await stream.next();
   } catch (e) {
@@ -132,7 +132,7 @@ export const POST = route<{ listingId: string }>(async (req, { params }) => {
             text += "\n\n";
             send({ type: "token", text: "\n\n" });
           }
-          await consume(chatStream(followUp, { reasoning: false, maxTokens: 800, signal: req.signal }));
+          await consume(chatStream(followUp, { reasoning: false, maxTokens: 250, signal: req.signal }));
         }
 
         const answer = text.trim() || "Sorry, I couldn't come up with an answer. Try asking another way.";

@@ -12,6 +12,10 @@ import { LISTING_COLUMNS, toListing } from "@/lib/server/rows";
 export const SYSTEM_PROMPT =
   'You are the assistant inside "placeholder", an app that helps high school and college students find internships, volunteering, events and scholarships. You are helping the student with one opportunity they saved; its details, their profile, and their other saved opportunities are in CONTEXT. Answer from CONTEXT first. If something isn\'t in CONTEXT (e.g. exact requirements not listed), say so plainly and suggest checking the original listing — never invent requirements, deadlines, or contact details. Be concise and friendly. When the student asks about timing, deadlines, or what to do next, offer to set reminders or a checklist using your tools. Compare with their other saved items only when they ask or when deadlines conflict.';
 
+/** House style on top of the spec prompt: students read this on a phone. */
+export const STYLE_PROMPT =
+  "Keep every answer short: 1–3 sentences, or up to 4 brief bullets when listing things. Aim for under 60 words. No headings, no preamble, no restating the question, and no closing offers unless they're one short line. Go longer only if the student asks for detail.";
+
 export const TOOLS: ToolDef[] = [
   {
     type: "function",
@@ -150,7 +154,7 @@ export async function buildContext(
     listing,
     timezone,
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: `${SYSTEM_PROMPT}\n\n${STYLE_PROMPT}` },
       { role: "system", content: `CONTEXT\n${JSON.stringify(context, null, 1)}` },
       ...history,
     ],

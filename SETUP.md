@@ -46,9 +46,19 @@ npm run typecheck
 ```
 Open http://localhost:3000 (wordmark) and http://localhost:3000/api/health (model check).
 
-## 5. Deploy to Vercel
-Import the folder/repo in Vercel, add the same env vars (set `APP_URL` to the Vercel URL), deploy,
-then open `/api/health` on the deployed URL.
+## 5. Deploy to Render
+1. Push the repo to GitHub.
+2. render.com → **New → Blueprint** → pick the repo. `render.yaml` sets up a free Node web
+   service (`npm ci && npm run build`, then `npm run start`).
+3. When Render asks for the secret env vars, paste the values from `.env.local`. Set `APP_URL` to
+   the Render URL (e.g. `https://placeholder.onrender.com`).
+4. Supabase dashboard → **Authentication → URL Configuration**: set **Site URL** to the Render URL
+   and add `https://<your-app>.onrender.com/auth/callback` to **Redirect URLs** (keep the
+   localhost one for development). Without this, Google sign-in and email links go to localhost.
+5. Open `https://<your-app>.onrender.com/api/health`; it should say `"ok": true`.
+
+Free Render services sleep after ~15 minutes idle; the first visit after that takes about a
+minute to wake up, so open the app a minute before a demo.
 
 ## Notes from the build
 - **AI provider is NVIDIA NIM, not OpenRouter** (changed 2026-10-16 at the owner's request).
@@ -69,9 +79,9 @@ then open `/api/health` on the deployed URL.
     whether two other people are friends.
 - **Age gate**: email/password sign-up has no 13+ check; consider adding one before launch (§14.4).
 - **Web push + reminders cron** (F8): `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and
-  `CRON_SECRET` were generated into `.env.local`; copy them to Vercel too. Reminders are sent by
+  `CRON_SECRET` were generated into `.env.local`; copy them to Render too. Reminders are sent by
   `GET /api/cron/reminders` with `Authorization: Bearer $CRON_SECRET`. It needs to run every 5
-  minutes after deploy: Vercel Hobby cron only runs daily, so schedule it from Supabase
+  minutes after deploy (not set up yet; reminders are optional for the demo). Schedule it from Supabase
   (`pg_cron` + `pg_net` calling the deployed URL) or an external cron.
 - **Chat** runs with Nemotron's thinking off (`reasoning: false`) so answers start streaming
   quickly; tool calls (`create_reminder`, `create_checklist`) are validated server-side, then the

@@ -1,0 +1,33 @@
+# Render Blueprint (render.com → New → Blueprint, pick this repo).
+# Secrets are `sync: false`: Render asks for them when the Blueprint is created; copy them from
+# .env.local. NEXT_PUBLIC_* values are baked in at build time, so redeploy after changing them.
+services:
+  - type: web
+    name: placeholder
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    # /login is public and doesn't call the AI provider, so a slow NIM can't fail the deploy.
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: CHAT_MODEL
+        value: nvidia/nemotron-3-super-120b-a12b
+      - key: APP_URL
+        sync: false # your Render URL, e.g. https://placeholder.onrender.com
+      - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
