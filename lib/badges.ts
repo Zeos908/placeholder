@@ -1,9 +1,11 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { api } from "@/lib/api";
-import { qk } from "@/lib/queries";
+import { qk, useMe } from "@/lib/queries";
+import { usePrefs } from "@/lib/store";
 import type { Me } from "@/lib/types";
 
 type BadgeKey = keyof Me["badges"];
@@ -61,4 +63,26 @@ export function useInboxSeen(items: Readable[] | undefined, visible: boolean) {
 export function useNotificationsSeen(items: Readable[] | undefined, visible: boolean) {
   const { mutate } = useMarkRead("unreadNotifications", qk.notifications, api.markNotificationsRead);
   useMarkSeenWhenShown(items, visible, mutate);
+}
+
+/**
+ * The number on the Saved tab: saves that became "due soon" since Saved was last opened.
+ * Opening Saved (or any saved item) clears it; it comes back only when more are due soon.
+ */
+export function useSavedBadge(): number {
+  const { data: me } = useMe();
+  const pathname = usePathname();
+  const dueSoon = me?.badges.dueSoon ?? 0;
+  const seen = usePrefs((s) => (me ? (s.dueSoonSeen[me.id] ?? 0) : 0));
+  const setSeen = usePrefs((s) => s.setDueSoonSeen);
+  const onSaved = pathname === "/saved" || pathname.startsWith("/saved/");
+
+  useEffect(() => {
+    if (!me) return;
+    // On Saved: everything shown counts as seen. Elsewhere: if some dropped off (deadline
+    // passed, unsaved), lower the mark so a newly due item shows up again.
+    if ((onSaved && seen !== dueSoon) || dueSoon < seen) setSeen(me.id, dueSoon);
+  }, [me, onSaved, dueSoon, seen, setSeen]);
+
+  return onSaved ? 0 : Math.max(0, dueSoon - seen);
 }

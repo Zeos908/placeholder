@@ -8,6 +8,7 @@ import { Avatar } from "@/components/Avatar";
 import { Wordmark } from "@/components/common/Wordmark";
 import { useShellUser } from "@/components/shell/shell-context";
 import { useTabNav } from "@/components/shell/useTabNav";
+import { useSavedBadge } from "@/lib/badges";
 import { useMe } from "@/lib/queries";
 import { TABS } from "@/lib/tabs";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ export function Sidebar() {
   const user = useShellUser();
   const onTab = useTabNav();
   const { data: me } = useMe();
+  const savedBadge = useSavedBadge();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
@@ -35,7 +37,7 @@ export function Sidebar() {
 
       <ul className="flex flex-col gap-1">
         {TABS.map((tab) => {
-          const badge = tab.key === "saved" ? (me?.badges.dueSoon ?? 0) : 0;
+          const badge = tab.key === "saved" ? savedBadge : 0;
           const dot = tab.key === "friends" && (me?.badges.unreadInbox ?? 0) > 0;
           return (
             <SidebarItem

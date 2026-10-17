@@ -37,14 +37,19 @@ export const useUi = create<UiState>()((set) => ({
 /** User preferences kept on this device (localStorage). */
 interface PrefsState {
   soundEnabled: boolean;
+  /** Per account: how many "due soon" saves there were when Saved was last opened. */
+  dueSoonSeen: Record<string, number>;
   setSoundEnabled: (enabled: boolean) => void;
+  setDueSoonSeen: (userId: string, count: number) => void;
 }
 
 export const usePrefs = create<PrefsState>()(
   persist(
     (set) => ({
       soundEnabled: true,
+      dueSoonSeen: {},
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
+      setDueSoonSeen: (userId, count) => set((s) => ({ dueSoonSeen: { ...s.dueSoonSeen, [userId]: count } })),
     }),
     {
       name: "placeholder-prefs",

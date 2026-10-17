@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTabNav } from "@/components/shell/useTabNav";
+import { useSavedBadge } from "@/lib/badges";
 import { useMe } from "@/lib/queries";
 import { TABS } from "@/lib/tabs";
 
@@ -11,7 +12,7 @@ export function TabBar() {
   const pathname = usePathname();
   const onTab = useTabNav();
   const { data: me } = useMe();
-  const dueSoon = me?.badges.dueSoon ?? 0;
+  const dueSoon = useSavedBadge();
   const unreadInbox = me?.badges.unreadInbox ?? 0;
 
   return (
