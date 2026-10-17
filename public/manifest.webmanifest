@@ -1,0 +1,13 @@
+{
+  "name": "placeholder",
+  "short_name": "placeholder",
+  "description": "Find internships, volunteering, events and scholarships.",
+  "start_url": "/feed",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#DD2A7B",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

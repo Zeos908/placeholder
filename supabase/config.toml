@@ -1,0 +1,6 @@
+# Minimal Supabase CLI config. `npx supabase link --project-ref <ref>` connects it to your cloud project.
+project_id = "placeholder"
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
