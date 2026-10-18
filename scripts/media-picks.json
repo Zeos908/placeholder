@@ -32,7 +32,8 @@
  "Legal Aid Clinic Intern": {
   "image_url": "https://live.staticflickr.com/65535/52408324300_46db59e460_b.jpg",
   "media_credit": "Photo: bm.willis · Public domain 1.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/196725890@N08/52408324300"
+  "media_credit_url": "https://www.flickr.com/photos/196725890@N08/52408324300",
+  "pixabay_video_id": 198890
  },
  "Marketing & Social Media Intern": {
   "image_url": "https://live.staticflickr.com/65535/53862771561_363a4b89b2_b.jpg",
@@ -57,7 +58,8 @@
  "Community Mural Painter": {
   "image_url": "https://live.staticflickr.com/65535/79753977_0e48108597_b.jpg",
   "media_credit": "Photo: Jean-Paul Margnac · CC BY-NC-SA 2.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/68047735@N00/79753977"
+  "media_credit_url": "https://www.flickr.com/photos/68047735@N00/79753977",
+  "pixabay_video_id": 85341
  },
  "Food Bank Packing Shifts": {
   "image_url": "https://live.staticflickr.com/65535/52372441046_d9fb3a6ef5_b.jpg",
@@ -87,7 +89,8 @@
  "Trail Restoration Weekend": {
   "image_url": "https://live.staticflickr.com/65535/54072088299_ce90c7de11_b.jpg",
   "media_credit": "Photo: mypubliclands · CC BY 2.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/91981596@N06/54072088299"
+  "media_credit_url": "https://www.flickr.com/photos/91981596@N06/54072088299",
+  "pixabay_video_id": 282995
  },
  "Virtual Coding Mentor": {
   "image_url": "https://live.staticflickr.com/65535/52672553593_c0082d5350_b.jpg",
@@ -112,12 +115,14 @@
  "Medical School Open House": {
   "image_url": "https://live.staticflickr.com/65535/49847277662_a010ba2f3d_b.jpg",
   "media_credit": "Photo: ILO PHOTOS NEWS · CC BY-NC-ND 2.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/71226001@N06/49847277662"
+  "media_credit_url": "https://www.flickr.com/photos/71226001@N06/49847277662",
+  "pixabay_video_id": 8449
  },
  "Poetry Slam Open Mic": {
   "image_url": "https://cdn.stocksnap.io/img-thumbs/960w/UZO5DBV5W8.jpg",
   "media_credit": "Photo: Kristin Hardwick · CC0 1.0 · stocksnap",
-  "media_credit_url": "https://stocksnap.io/photo/writing-letter-UZO5DBV5W8"
+  "media_credit_url": "https://stocksnap.io/photo/writing-letter-UZO5DBV5W8",
+  "pixabay_video_id": 201676
  },
  "Robotics Build Weekend": {
   "image_url": "https://live.staticflickr.com/65535/52229584896_40c2314200_b.jpg",
@@ -162,7 +167,8 @@
  "Environmental Stewardship Grant": {
   "image_url": "https://live.staticflickr.com/65535/53713762342_3da19f9fd0_b.jpg",
   "media_credit": "Photo: Philadelphia Parks & Recreation · Public domain 1.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/77365596@N05/53713762342"
+  "media_credit_url": "https://www.flickr.com/photos/77365596@N05/53713762342",
+  "pixabay_video_id": 48892
  },
  "First-Gen College Scholarship": {
   "image_url": "https://live.staticflickr.com/65535/52041230413_7ea241ff7b_b.jpg",
@@ -177,7 +183,8 @@
  "Healthcare Heroes Scholarship": {
   "image_url": "https://live.staticflickr.com/65535/49847277637_e4946d184e_b.jpg",
   "media_credit": "Photo: ILO PHOTOS NEWS · CC BY-NC-ND 2.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/71226001@N06/49847277637"
+  "media_credit_url": "https://www.flickr.com/photos/71226001@N06/49847277637",
+  "pixabay_video_id": 5448
  },
  "Student Athlete Scholar Award": {
   "image_url": "https://live.staticflickr.com/3880/14376408617_e1960aaca6_b.jpg",
@@ -187,16 +194,19 @@
  "Women in Coding Scholarship": {
   "image_url": "https://live.staticflickr.com/65535/52658458046_515af6c606_b.jpg",
   "media_credit": "Photo: Jefferson Lab · Public domain 1.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/53950384@N02/52658458046"
+  "media_credit_url": "https://www.flickr.com/photos/53950384@N02/52658458046",
+  "pixabay_video_id": 28320
  },
  "Young Entrepreneurs Award": {
   "image_url": "https://live.staticflickr.com/65535/52668709640_232b381b54_b.jpg",
   "media_credit": "Photo: MDGovpics · CC BY 2.0 · flickr",
-  "media_credit_url": "https://www.flickr.com/photos/64018555@N03/52668709640"
+  "media_credit_url": "https://www.flickr.com/photos/64018555@N03/52668709640",
+  "pixabay_video_id": 198901
  },
  "Young Writers Prize": {
   "image_url": "https://cdn.stocksnap.io/img-thumbs/960w/HDMD9OPCXX.jpg",
   "media_credit": "Photo: Aidan Meyer · CC0 1.0 · stocksnap",
-  "media_credit_url": "https://stocksnap.io/photo/people-girl-HDMD9OPCXX"
+  "media_credit_url": "https://stocksnap.io/photo/people-girl-HDMD9OPCXX",
+  "pixabay_video_id": 277042
  }
 }

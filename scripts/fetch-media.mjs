@@ -12,7 +12,8 @@
  *   npm run media:fetch -- --force   redo all of them
  *   npm run media:fetch -- --dry-run show what would be picked, change nothing
  *   npm run media:fetch -- --review  also write scripts/.media-review.json to eyeball the picks
- *   npm run media:fetch -- --no-picks  ignore scripts/media-picks.json (hand-reviewed photos for the
+ *   npm run media:fetch -- --no-picks  ignore scripts/media-picks.json (hand-reviewed photos, and
+ *                                      Pixabay clip ids via "pixabay_video_id", for the
  *                                      demo listings, used first by default)
  *
  * Needs NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local. Each listing
@@ -133,6 +134,28 @@ async function store(listingId, name, sourceUrl) {
   return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
+/** A Pixabay video hit → pick result (copied into Storage when applied), or null if unusable. */
+function videoPick(l, h, query) {
+  // ~960 px wide is plenty for a phone feed; drop to 640 px when that's still over 5 MB.
+  const { small, tiny, medium } = h.videos ?? {};
+  const file = small?.url && !(small.size > 5_000_000 && tiny?.url) ? small : tiny?.url ? tiny : medium;
+  if (!file?.url) return null;
+  used.add(`pv${h.id}`);
+  return {
+    query,
+    seconds: h.duration,
+    pixabayId: h.id,
+    preview: file.thumbnail,
+    row: async () => ({
+      video_url: await store(l.id, `clip-${h.id}-${file.width}.mp4`, file.url),
+      image_url: await store(l.id, `poster-${h.id}.jpg`, file.thumbnail),
+      image_alt: l.title,
+      media_credit: `Video by ${h.user} on Pixabay`,
+      media_credit_url: h.pageURL,
+    }),
+  };
+}
+
 async function pixabayVideo(l) {
   for (const q of queriesFor(l)) {
     const data = await getJson(
@@ -140,25 +163,17 @@ async function pixabayVideo(l) {
     );
     const hits = (data.hits ?? []).filter((h) => h.duration >= MIN_SECONDS && h.duration <= MAX_SECONDS && !used.has(`pv${h.id}`));
     if (!hits.length) continue;
-    const h = hits[hash(l.id) % Math.min(hits.length, 4)];
-    // ~960 px wide is plenty for a phone feed and keeps files small.
-    const file = h.videos?.small?.url ? h.videos.small : h.videos?.tiny?.url ? h.videos.tiny : h.videos?.medium;
-    if (!file?.url) continue;
-    used.add(`pv${h.id}`);
-    return {
-      query: q,
-      seconds: h.duration,
-      preview: file.thumbnail,
-      row: async () => ({
-        video_url: await store(l.id, "clip.mp4", file.url),
-        image_url: await store(l.id, "poster.jpg", file.thumbnail),
-        image_alt: l.title,
-        media_credit: `Video by ${h.user} on Pixabay`,
-        media_credit_url: h.pageURL,
-      }),
-    };
+    const pick = videoPick(l, hits[hash(l.id) % Math.min(hits.length, 4)], q);
+    if (pick) return pick;
   }
   return null;
+}
+
+/** The exact clip a curated pick names (search results drift; ids don't). */
+async function pixabayVideoById(l, id) {
+  const data = await getJson(`https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&id=${id}`);
+  const h = data.hits?.[0];
+  return h && h.duration <= MAX_SECONDS ? videoPick(l, h, `pixabay video ${id}`) : null;
 }
 
 async function pixabayPhoto(l) {
@@ -175,7 +190,7 @@ async function pixabayPhoto(l) {
       preview: h.webformatURL,
       row: async () => ({
         video_url: null,
-        image_url: await store(l.id, "photo.jpg", h.largeImageURL),
+        image_url: await store(l.id, `photo-${h.id}.jpg`, h.largeImageURL),
         image_alt: l.title,
         media_credit: `Photo by ${h.user} on Pixabay`,
         media_credit_url: h.pageURL,
@@ -232,7 +247,13 @@ const PICKS = existsSync(new URL("./media-picks.json", import.meta.url))
 async function pick(l) {
   const curated = PICKS[l.title];
   if (curated && !args.has("--no-picks")) {
-    return { query: "curated", preview: curated.image_url, row: async () => ({ video_url: null, image_alt: l.title, ...curated }) };
+    // A hand-picked clip when there is one (needs the key), else the hand-picked photo.
+    const { pixabay_video_id: videoId, ...photo } = curated;
+    if (videoId && PIXABAY_API_KEY) {
+      const clip = await pixabayVideoById(l, videoId);
+      if (clip) return { ...clip, query: "curated clip" };
+    }
+    return { query: "curated", preview: photo.image_url, row: async () => ({ video_url: null, image_alt: l.title, ...photo }) };
   }
   if (PIXABAY_API_KEY) {
     const wantVideo = hash(`video:${l.id}`) % 2 === 0;
@@ -262,7 +283,7 @@ for (const l of listings) {
       continue;
     }
     const isVideo = p.seconds !== undefined;
-    review.push({ id: l.id, title: l.title, query: p.query, preview: p.preview, video: isVideo });
+    review.push({ id: l.id, title: l.title, query: p.query, preview: p.preview, video: isVideo, pixabay_id: p.pixabayId });
     console.log(`  ${isVideo ? `▶ ${p.seconds}s` : "▣   "}  ${l.title}  ← "${p.query}"`);
     if (isVideo) videos++;
     else photos++;
