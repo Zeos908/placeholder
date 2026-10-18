@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { publicOrigin } from "@/lib/public-origin";
 
 // Paths reachable without signing in. Everything else requires a session.
 const PUBLIC_PREFIXES = ["/login", "/signup", "/auth/", "/invite/", "/api/health", "/api/cron/"];
@@ -18,7 +19,7 @@ export async function updateSession(request: NextRequest) {
   // Mock API mode: a fake user is always signed in, and there's no Supabase to talk to.
   if (process.env.NEXT_PUBLIC_MOCK_API === "1") {
     const path = request.nextUrl.pathname;
-    if (AUTH_PAGES.includes(path)) return NextResponse.redirect(new URL("/feed", request.url));
+    if (AUTH_PAGES.includes(path)) return NextResponse.redirect(new URL("/feed", publicOrigin(request)));
     return NextResponse.next({ request });
   }
 
@@ -51,22 +52,23 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = path === "/" ? "" : `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
-    return redirectWithCookies(url, response);
+    return redirectWithCookies(request, url, response);
   }
 
   if (signedIn && AUTH_PAGES.includes(path)) {
     const url = request.nextUrl.clone();
     url.pathname = "/feed";
     url.search = "";
-    return redirectWithCookies(url, response);
+    return redirectWithCookies(request, url, response);
   }
 
   return response;
 }
 
 // Carries refreshed session cookies over to a redirect response.
-function redirectWithCookies(url: URL, from: NextResponse) {
-  const redirect = NextResponse.redirect(url);
+function redirectWithCookies(request: NextRequest, url: URL, from: NextResponse) {
+  // Same path and query, but on the public origin (see lib/public-origin.ts).
+  const redirect = NextResponse.redirect(new URL(url.pathname + url.search, publicOrigin(request)));
   for (const cookie of from.cookies.getAll()) redirect.cookies.set(cookie);
   return redirect;
 }
