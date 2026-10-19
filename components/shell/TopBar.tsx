@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Wordmark } from "@/components/common/Wordmark";
@@ -28,6 +28,9 @@ export function TopBar() {
           <Wordmark size={30} />
         </Link>
         <div className="flex items-center gap-5">
+          <Link href="/search" aria-label="Search">
+            <Search className="size-6" strokeWidth={1.75} />
+          </Link>
           <Link
             href="/notifications"
             aria-label={unread ? "Notifications (unread)" : "Notifications"}

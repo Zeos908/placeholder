@@ -13,6 +13,7 @@ import type {
   FeedPost,
   FriendsData,
   InboxItem,
+  Listing,
   ListingDetail,
   Me,
   OppType,
@@ -119,6 +120,7 @@ export const api = {
   passed: () => get<PassedItem[]>("/api/passed"),
   restore: (listingId: string) => post<{ ok: true }>(`/api/passed/${listingId}/restore`),
   listing: (listingId: string) => get<ListingDetail>(`/api/listings/${listingId}`),
+  search: (q: string, type?: OppType | null) => get<Listing[]>(`/api/search${qs({ q, type })}`),
 
   // ---- chat
   chatHistory: (listingId: string) => get<ChatHistory>(`/api/chat/${listingId}`),

@@ -190,6 +190,26 @@ describe("feed + swipe (F2/F3)", () => {
     expect((await a.call(`/api/passed/${passedId}/restore`, { method: "POST" })).status).toBe(404);
   });
 
+  it("search matches words in titles and tags, filters by type, and survives odd input", async () => {
+    const hits = await a.call<{ title: string; type: string; tags: string[] }[]>("/api/search?q=hackathon");
+    expect(hits.status).toBe(200);
+    expect(hits.body.some((l) => /hackathon/i.test(l.title))).toBe(true);
+
+    const coding = await a.call<{ type: string; tags: string[]; title: string; description: string | null }[]>(
+      "/api/search?q=coding&type=internship",
+    );
+    expect(coding.body.length).toBeGreaterThan(0);
+    expect(coding.body.every((l) => l.type === "internship")).toBe(true);
+
+    expect((await a.call<unknown[]>("/api/search?q=a")).body).toEqual([]);
+    expect((await a.call("/api/search?q=coding&type=nope")).status).toBe(400);
+    // PostgREST or()-syntax and LIKE characters must not break or widen the query.
+    for (const odd of ["coding,title.eq.x", "(%_*)", "{stem}", "it's"]) {
+      expect((await a.call(`/api/search?q=${encodeURIComponent(odd)}`)).status).toBe(200);
+    }
+    expect((await fetch(`${BASE}/api/search?q=coding`)).status).toBe(401);
+  });
+
   it("stories and the right panel load", async () => {
     expect((await a.call("/api/stories")).status).toBe(200);
     expect((await a.call("/api/stories/closing")).status).toBe(200);

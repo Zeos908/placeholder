@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, type LucideIcon } from "lucide-react";
+import { Bell, Menu, Search, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { MouseEvent, ReactNode } from "react";
@@ -52,6 +52,7 @@ export function Sidebar() {
             />
           );
         })}
+        <SidebarItem href="/search" label="Search" icon={Search} active={isActive("/search")} />
         <SidebarItem
           href="/notifications"
           label="Notifications"

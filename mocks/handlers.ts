@@ -388,6 +388,34 @@ export const handlers = [
     });
   }),
 
+  // ---- search (same matching as the real route: every word, in text fields or tags)
+  http.get("*/api/search", async ({ request }) => {
+    await latency();
+    const params = new URL(request.url).searchParams;
+    const type = params.get("type") as OppType | null;
+    const words = (params.get("q") ?? "")
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length >= 2)
+      .slice(0, 5);
+    if (!words.length) return HttpResponse.json([]);
+    const now = Date.now();
+    const closed = (deadline: string | null) => !!deadline && new Date(deadline).getTime() < now;
+    const hits = db()
+      .listings.filter((l) => !type || l.type === type)
+      .filter((l) => {
+        const text = [l.title, l.org_name, l.summary, l.description, l.location_text].join(" ").toLowerCase();
+        return words.every((w) => text.includes(w) || l.tags.includes(w));
+      })
+      .sort(
+        (a, b) =>
+          Number(closed(a.deadline)) - Number(closed(b.deadline)) ||
+          (a.deadline ?? "9999").localeCompare(b.deadline ?? "9999"),
+      )
+      .slice(0, 40);
+    return HttpResponse.json(hits);
+  }),
+
   // ---- chat
   http.get("*/api/chat/:id", async ({ params }) => {
     await latency();
