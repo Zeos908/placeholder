@@ -1,15 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Grand_Hotel, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+// Self-hosted (Latin subsets from Google Fonts, SIL OFL) so builds never depend on reaching
+// fonts.googleapis.com; when that request failed, the wordmark silently fell back to a plain font.
+const inter = localFont({
+  src: "./fonts/Inter-Variable-latin.woff2",
+  weight: "400 700",
   variable: "--font-inter",
+  display: "swap",
 });
-const grandHotel = Grand_Hotel({ subsets: ["latin"], weight: "400", variable: "--font-grand-hotel" });
+const grandHotel = localFont({
+  src: "./fonts/GrandHotel-Regular.woff2",
+  weight: "400",
+  variable: "--font-grand-hotel",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "placeholder",
