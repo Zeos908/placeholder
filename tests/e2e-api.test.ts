@@ -299,6 +299,12 @@ describe("friends (F6)", () => {
     const inv = await a.call<{ code: string; url: string }>("/api/invites", { method: "POST" });
     expect(inv.body.url).toContain(`/invite/${inv.body.code}`);
     expect((await a.call<{ code: string }>("/api/invites", { method: "POST" })).body.code).toBe(inv.body.code);
+    // Behind a proxy (Render) the link must use the public host, not the internal localhost one.
+    const proxied = await a.call<{ url: string }>("/api/invites", {
+      method: "POST",
+      headers: { "x-forwarded-host": "placeholder-e2e.onrender.com", "x-forwarded-proto": "https" },
+    });
+    expect(proxied.body.url).toBe(`https://placeholder-e2e.onrender.com/invite/${inv.body.code}`);
 
     const page = await b.call<string>(`/invite/${inv.body.code}`);
     expect(page.status).toBe(200);
