@@ -36,6 +36,17 @@ export default async function SignUpPage({
           </>
         )}
         <SignUpForm />
+        <p className="text-center text-xs leading-4 text-muted-foreground">
+          By signing up, you agree to our{" "}
+          <Link href="/terms" className="font-semibold text-foreground">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="font-semibold text-foreground">
+            Privacy Policy
+          </Link>
+          . You must be 13 or older.
+        </p>
       </section>
       <p className="rounded-sm border border-border px-6 py-5 text-center text-sm">
         Have an account?{" "}

@@ -51,6 +51,14 @@ export default async function LoginPage({
           Sign up
         </Link>
       </p>
+      <nav aria-label="Legal" className="flex justify-center gap-4 text-xs text-muted-foreground">
+        <Link href="/privacy" className="hover:text-foreground">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="hover:text-foreground">
+          Terms of Service
+        </Link>
+      </nav>
     </>
   );
 }

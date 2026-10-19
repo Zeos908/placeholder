@@ -62,6 +62,15 @@ export function SettingsView() {
         <BlockedRow />
       </Group>
 
+      <Group title="About">
+        <RowLink href="/privacy" label="Privacy Policy">
+          <span className="flex-1">Privacy Policy</span>
+        </RowLink>
+        <RowLink href="/terms" label="Terms of Service">
+          <span className="flex-1">Terms of Service</span>
+        </RowLink>
+      </Group>
+
       <div className="mt-6 space-y-1 border-t border-border pt-4">
         <form action={signOut}>
           <button type="submit" className="w-full px-4 py-3 text-left font-semibold text-link">

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { publicOrigin } from "@/lib/public-origin";
 
 // Paths reachable without signing in. Everything else requires a session.
-const PUBLIC_PREFIXES = ["/login", "/signup", "/auth/", "/invite/", "/api/health", "/api/cron/"];
+const PUBLIC_PREFIXES = ["/login", "/signup", "/auth/", "/invite/", "/privacy", "/terms", "/api/health", "/api/cron/"];
 // Signed-in users get sent from these to the app.
 const AUTH_PAGES = ["/login", "/signup"];
 
