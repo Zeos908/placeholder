@@ -463,3 +463,93 @@ describe("safety, push, reminders cron (F7)", () => {
     expect(rows?.every((r) => r.sent_at)).toBe(true);
   });
 });
+
+describe("guest accounts (Continue as guest)", () => {
+  let guest: { id: string; call: User["call"]; db: SupabaseClient } | null = null;
+
+  beforeAll(async () => {
+    const settings = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: anonKey } }).then((r) => r.json());
+    if (!settings.external?.anonymous_users) {
+      console.warn("[e2e] Anonymous sign-ins are off in Supabase; guest checks skipped.");
+      return;
+    }
+    const jar = new Map<string, string>();
+    const ssr = createServerClient(url, anonKey, {
+      cookies: {
+        getAll: () => [...jar].map(([name, value]) => ({ name, value })),
+        setAll: (list) => list.forEach(({ name, value }) => (value ? jar.set(name, value) : jar.delete(name))),
+      },
+    });
+    const { data, error } = await ssr.auth.signInAnonymously();
+    if (error) throw error;
+    const cookie = [...jar].map(([n, v]) => `${n}=${v}`).join("; ");
+    guest = {
+      id: data.user!.id,
+      db: ssr,
+      call: async (path, init = {}) => {
+        const { json, ...rest } = init;
+        const res = await fetch(`${BASE}${path}`, {
+          ...rest,
+          redirect: "manual",
+          headers: { cookie, ...(json !== undefined && { "content-type": "application/json" }), ...rest.headers },
+          body: json !== undefined ? JSON.stringify(json) : rest.body,
+        });
+        const text = await res.text();
+        let body: unknown = text;
+        try {
+          body = JSON.parse(text);
+        } catch {
+          // HTML
+        }
+        return { status: res.status, body: body as never };
+      },
+    };
+  });
+
+  afterAll(async () => {
+    if (guest) await admin.auth.admin.deleteUser(guest.id);
+  });
+
+  it("is flagged as a guest, skips onboarding, and can browse and save", async (ctx) => {
+    if (!guest) return ctx.skip();
+    const me = await guest.call<Me>("/api/me");
+    expect(me.body.is_guest).toBe(true);
+    expect(me.body.onboarded).toBe(true);
+    expect(me.body.display_name).toBe("Guest");
+    const page = await guest.call<FeedPage>("/api/feed");
+    expect(page.body.posts.length).toBeGreaterThan(0);
+    const save = await guest.call("/api/swipe", { method: "POST", json: { listingId: page.body.posts[0].id, direction: "right" } });
+    expect(save.status).toBe(200);
+    expect((await guest.call<ChatHistory>(`/api/chat/${page.body.posts[0].id}`)).body.limit).toBe(10);
+    // Login/sign-up stay reachable so a guest can make a real account.
+    expect((await guest.call("/signup")).status).toBe(200);
+  });
+
+  it("can't use friends, sharing or invites, even directly against the database", async (ctx) => {
+    if (!guest) return ctx.skip();
+    for (const [path, json] of [
+      ["/api/friends/request", { userId: a.id }],
+      ["/api/share", { toUserIds: [a.id], listingId: savedId }],
+      ["/api/invites", {}],
+    ] as const) {
+      const r = await guest.call<{ code: string }>(path, { method: "POST", json });
+      expect(r.status, path).toBe(403);
+      expect(r.body.code).toBe("guest");
+    }
+    // Row-level security refuses the same writes from the guest's own Supabase client.
+    const direct = await Promise.all([
+      guest.db.from("friendships").insert({ requester_id: guest.id, addressee_id: a.id }),
+      guest.db.from("shares").insert({ from_user: guest.id, to_user: a.id, listing_id: savedId }),
+      guest.db.from("invites").insert({ code: `G${run}`.toUpperCase(), user_id: guest.id }),
+    ]);
+    for (const r of direct) expect(r.error?.code).toBe("42501");
+  });
+
+  it("is invisible to everyone else", async (ctx) => {
+    if (!guest) return ctx.skip();
+    const me = await guest.call<Me>("/api/me");
+    const found = await a.call<{ id: string }[]>(`/api/friends/search?q=${me.body.username.slice(0, 12)}`);
+    expect(found.body.map((p) => p.id)).not.toContain(guest.id);
+    expect((await a.call(`/api/users/${me.body.username}`)).status).toBe(404);
+  });
+});

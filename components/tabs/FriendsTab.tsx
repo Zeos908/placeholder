@@ -3,6 +3,7 @@
 import { Inbox, QrCode, Search, UserPlus, Users } from "lucide-react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
+import { GuestPrompt } from "@/components/auth/GuestPrompt";
 import { EmptyState, ErrorState } from "@/components/common/EmptyState";
 import { PostSheet } from "@/components/common/PostSheet";
 import { InviteSheet } from "@/components/friends/InviteSheet";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useInboxSeen } from "@/lib/badges";
 import { interleave, useActivity, useFriendActions, useFriends, useInbox, useUserSearch } from "@/lib/friends";
+import { useMe } from "@/lib/queries";
 import { useUi } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +29,13 @@ const SEGMENTS: { value: Segment; label: string }[] = [
  * jumps to Inbox, and they're marked read once on screen, which clears the tab's red dot.
  */
 export function FriendsTab() {
+  const { data: me } = useMe();
+  // Guests can't use friends (the API and database refuse too), so skip its queries entirely.
+  if (me?.is_guest) return <GuestPrompt />;
+  return <FriendsTabContent />;
+}
+
+function FriendsTabContent() {
   const { active } = useTabActive();
   const [segment, setSegment] = useState<Segment>("activity");
   const [postId, setPostId] = useState<string | null>(null);

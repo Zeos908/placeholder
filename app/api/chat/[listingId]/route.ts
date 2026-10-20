@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { z } from "zod";
 import { AiBusyError, chatStream, type ChatMessage as AiMessage, type StreamEvent } from "@/lib/ai";
 import { env } from "@/lib/env";
@@ -11,13 +12,16 @@ export const maxDuration = 60;
 
 const BUSY = "The assistant is busy right now — try again in a minute.";
 const MESSAGE_COLUMNS = "id, role, content, created_at";
+// Guests (anonymous accounts) get a smaller daily allowance so the AI can't be farmed via guest sessions.
+const GUEST_CHAT_LIMIT = 10;
+const chatLimit = (user: User) => (user.is_anonymous ? Math.min(GUEST_CHAT_LIMIT, env().CHAT_DAILY_LIMIT) : env().CHAT_DAILY_LIMIT);
 
 /** GET /api/chat/[listingId]: stored history + today's remaining questions. */
 export const GET = route<{ listingId: string }>(async (_req, { params }) => {
   const { supabase, user } = await authed();
   const { listingId } = await params;
   await visibleListing(supabase, listingId);
-  const limit = env().CHAT_DAILY_LIMIT;
+  const limit = chatLimit(user);
   const [thread, used] = await Promise.all([
     supabase.from("chat_threads").select("id").eq("user_id", user.id).eq("listing_id", listingId).maybeSingle(),
     supabase.rpc("chat_used_today"),
@@ -46,10 +50,11 @@ export const POST = route<{ listingId: string }>(async (req, { params }) => {
   const { content } = await body(req, schema);
   await visibleListing(supabase, listingId);
 
-  const limit = env().CHAT_DAILY_LIMIT;
+  const limit = chatLimit(user);
   const remaining = check(await supabase.rpc("consume_chat_message", { p_limit: limit }), "send that") as number;
   if (remaining < 0) {
-    throw new HttpError(429, `You've used today's ${limit} questions. They reset at midnight.`, "limit");
+    const more = user.is_anonymous ? " Create an account for more." : "";
+    throw new HttpError(429, `You've used today's ${limit} questions. They reset at midnight.${more}`, "limit");
   }
 
   let userMessageId: string | null = null;

@@ -346,6 +346,7 @@ export function meResponse(): Me {
   const { lat, lng, ...me } = state.me;
   return {
     ...me,
+    is_guest: false,
     counts: counts(),
     badges: {
       dueSoon,

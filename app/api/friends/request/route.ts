@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { friendshipWith, visiblePerson } from "@/lib/server/friends";
 import { displayNameOf, notify, TITLES } from "@/lib/server/notify";
-import { authed, body, check, HttpError, route } from "@/lib/server/route";
+import { authed, body, check, HttpError, route, requireAccount } from "@/lib/server/route";
 
 const schema = z.object({ userId: z.string() });
 
@@ -11,6 +11,7 @@ const schema = z.object({ userId: z.string() });
  */
 export const POST = route(async (req) => {
   const { supabase, user } = await authed();
+  requireAccount(user);
   const { userId } = await body(req, schema);
   if (userId === user.id) throw new HttpError(400, "That's you!");
   await visiblePerson(supabase, userId);

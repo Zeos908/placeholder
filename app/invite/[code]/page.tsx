@@ -15,6 +15,7 @@ const MESSAGES: Record<string, string> = {
   already_friends: "You're already friends.",
   self: "This is your own invite link. Share it with friends!",
   blocked: "This invite can't be used.",
+  guest: "You're using a guest account. Create an account to add friends.",
 };
 
 /**

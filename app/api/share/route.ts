@@ -2,7 +2,7 @@ import { z } from "zod";
 import { friendIds } from "@/lib/server/friends";
 import { displayNameOf, notify, TITLES } from "@/lib/server/notify";
 import { visibleListing } from "@/lib/server/planning";
-import { authed, body, check, HttpError, route } from "@/lib/server/route";
+import { authed, body, check, HttpError, route, requireAccount } from "@/lib/server/route";
 
 const schema = z.object({
   toUserIds: z.array(z.string()).min(1, "Pick at least one friend.").max(50),
@@ -13,6 +13,7 @@ const schema = z.object({
 /** POST /api/share {toUserIds[], listingId, message?} → a share + notification per friend. */
 export const POST = route(async (req) => {
   const { supabase, user } = await authed();
+  requireAccount(user);
   const { toUserIds, listingId, message } = await body(req, schema);
   await visibleListing(supabase, listingId);
 

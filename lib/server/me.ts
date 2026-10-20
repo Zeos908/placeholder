@@ -47,6 +47,7 @@ export async function loadMe(supabase: SupabaseClient, user: { id: string; email
     theme: p.theme ?? "system",
     timezone: p.timezone,
     onboarded: Boolean(p.onboarded_at),
+    is_guest: Boolean(p.is_guest),
     counts: {
       saved: rows.length,
       applied: rows.filter((r) => ["applied", "accepted", "rejected"].includes(r.app_status ?? "")).length,

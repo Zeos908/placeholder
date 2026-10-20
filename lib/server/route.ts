@@ -28,6 +28,14 @@ export async function authed(): Promise<Ctx> {
   return { supabase, user: data.user };
 }
 
+/**
+ * 403 for guests (anonymous accounts) on social features. The database blocks these too (RLS);
+ * this just gives a readable message first.
+ */
+export function requireAccount(user: User, what = "add friends and share") {
+  if (user.is_anonymous) throw new HttpError(403, `Create an account to ${what}.`, "guest");
+}
+
 export async function body<T>(req: Request, schema: z.ZodType<T>): Promise<T> {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? "Invalid request.");

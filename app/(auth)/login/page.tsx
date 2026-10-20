@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GoogleButton, OrDivider } from "@/components/auth/GoogleButton";
+import { GuestButton } from "@/components/auth/GuestButton";
 import { Wordmark } from "@/components/common/Wordmark";
 import { isGoogleEnabled } from "@/lib/auth-providers";
 import { safeNext } from "@/lib/safe-next";
@@ -41,6 +42,8 @@ export default async function LoginPage({
             {error}
           </p>
         )}
+        <OrDivider />
+        <GuestButton next={next} />
       </section>
       <p className="rounded-sm border border-border px-6 py-5 text-center text-sm">
         Don&apos;t have an account?{" "}

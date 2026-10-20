@@ -55,7 +55,9 @@ export async function updateSession(request: NextRequest) {
     return redirectWithCookies(request, url, response);
   }
 
-  if (signedIn && AUTH_PAGES.includes(path)) {
+  // Guests (anonymous accounts) may still open login/sign-up to make a real account.
+  const guest = data?.claims?.is_anonymous === true;
+  if (signedIn && !guest && AUTH_PAGES.includes(path)) {
     const url = request.nextUrl.clone();
     url.pathname = "/feed";
     url.search = "";

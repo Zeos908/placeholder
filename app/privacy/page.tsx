@@ -28,6 +28,12 @@ export default function PrivacyPage() {
             photo from Google.
           </li>
           <li>
+            <strong>Guest accounts.</strong> If you choose &quot;Continue as guest,&quot; we create an account with no
+            email or password, tied to your browser&apos;s sign-in cookie. Guests are hidden from other users and
+            can&apos;t use friend or sharing features. Signing out ends the guest session, and its data can no longer be
+            reached.
+          </li>
+          <li>
             <strong>Profile.</strong> Your username, plus anything you choose to add: display name, profile photo, grade
             or year, school, zip code and search radius, interests, skills and a short bio. Everything except your
             username is optional.

@@ -22,7 +22,7 @@ services:
       - key: NVIDIA_API_KEY
         sync: false
       - key: CHAT_MODEL
-        value: nvidia/nemotron-3-super-120b-a12b
+        value: nvidia/nemotron-3-ultra-550b-a55b
       - key: APP_URL
         sync: false # your Render URL, e.g. https://placeholder.onrender.com
       - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY

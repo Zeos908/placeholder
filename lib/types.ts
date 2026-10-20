@@ -228,6 +228,8 @@ export interface Me {
   theme: Theme;
   timezone: string;
   onboarded: boolean;
+  /** A "Continue as guest" (anonymous) account: no friends, sharing or invites. */
+  is_guest: boolean;
   counts: Counts;
   /** Badge counts for the shell. */
   badges: { dueSoon: number; unreadInbox: number; unreadNotifications: number };

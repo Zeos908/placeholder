@@ -32,6 +32,18 @@ export function SettingsView() {
 
   return (
     <div className="pb-10">
+      {me.is_guest && (
+        <div className="mx-4 mt-4 rounded-lg border border-border bg-surface p-4 text-sm">
+          <p className="font-semibold">You&apos;re using a guest account</p>
+          <p className="mt-1 text-muted-foreground">
+            Your saves stay as long as you&apos;re signed in on this device. Signing out ends the guest session. Create an
+            account to add friends, share posts and get more AI questions each day.
+          </p>
+          <Button asChild variant="gradient" size="sm" className="mt-3">
+            <Link href="/signup">Create an account</Link>
+          </Button>
+        </div>
+      )}
       <Group title="Account">
         <RowLink href="/settings/profile" label="Edit profile">
           <Avatar url={me.avatar_url} name={me.display_name || me.username} size={36} />

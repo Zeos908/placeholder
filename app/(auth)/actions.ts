@@ -92,6 +92,28 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   };
 }
 
+/**
+ * "Continue as guest": a Supabase anonymous account (no email). The database flags it as a
+ * guest, skips onboarding, hides it from other people and blocks friend/share features.
+ */
+export async function continueAsGuest(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const next = safeNext(formData.get("next"));
+  if (process.env.NEXT_PUBLIC_MOCK_API === "1") redirect(next);
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInAnonymously();
+  if (error) {
+    console.error("[auth] guest sign-in:", error.message);
+    const m = error.message.toLowerCase();
+    if (m.includes("anonymous") && (m.includes("disabled") || m.includes("not enabled")))
+      return { error: "Guest access isn't turned on yet. Sign up or log in instead." };
+    if (m.includes("rate limit") || m.includes("too many"))
+      return { error: "Too many guest sessions from this network. Try again in a while, or sign up." };
+    return { error: "Couldn't start a guest session. Try again." };
+  }
+  redirect(next);
+}
+
 export async function signOut() {
   if (process.env.NEXT_PUBLIC_MOCK_API === "1") redirect("/feed"); // the mock user can't sign out
   const supabase = await createClient();
